@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clube Premium - Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="club-auth-body">
+  <div class="club-auth-shell">
+    <div class="club-auth-card">
+      <div class="club-auth-brand">
+        <div class="club-auth-logo">CP</div>
+        <div>
+          <h1>Clube Premium</h1>
+          <p>Dra. Alessandra</p>
+        </div>
+      </div>
+
+      <div class="club-auth-header">
+        <h2>Entrar</h2>
+        <p>Acesse sua área exclusiva do clube</p>
+      </div>
+
+      <form id="club-login-form" class="club-auth-form">
+        <div class="field">
+          <label for="login-email">E-mail</label>
+          <input id="login-email" type="email" placeholder="seuemail@exemplo.com" required />
+        </div>
+
+        <div class="field">
+          <label for="login-password">Senha</label>
+          <input id="login-password" type="password" placeholder="••••••••" required />
+        </div>
+
+        <button type="submit" class="btn-primary full">Entrar</button>
+      </form>
+
+      <div class="club-auth-divider"><span>ou</span></div>
+
+      <form id="club-register-form" class="club-auth-form">
+        <div class="field">
+          <label for="register-name">Nome completo</label>
+          <input id="register-name" type="text" placeholder="Seu nome" required />
+        </div>
+
+        <div class="field-grid">
+          <div class="field">
+            <label for="register-email">E-mail</label>
+            <input id="register-email" type="email" placeholder="seuemail@exemplo.com" required />
+          </div>
+          <div class="field">
+            <label for="register-phone">Telefone</label>
+            <input id="register-phone" type="text" placeholder="(11) 99999-9999" />
+          </div>
+        </div>
+
+        <div class="field-grid">
+          <div class="field">
+            <label for="register-password">Senha</label>
+            <input id="register-password" type="password" placeholder="Crie uma senha" required />
+          </div>
+          <div class="field">
+            <label for="register-referral">Código de indicação</label>
+            <input id="register-referral" type="text" placeholder="Opcional" />
+          </div>
+        </div>
+
+        <button type="submit" class="btn-secondary full">Criar conta</button>
+      </form>
+
+      <div id="club-auth-feedback" class="auth-feedback"></div>
+      <p class="auth-note">Etapa 1: base visual e navegação local. Na próxima etapa ligamos ao banco e ao MediCore.</p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

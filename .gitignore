@@ -1,0 +1,52 @@
+# Logs
+*.log
+
+# Ambiente
+.env
+.env.*
+config.local.php
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# VSCode / IDE
+.vscode/
+.idea/
+
+# Node
+node_modules/
+
+# Cache
+cache/
+tmp/
+temp/
+
+# Uploads privados
+uploads/
+storage/
+
+# Sessões
+sessions/
+
+# Backups
+*.bak
+*.backup
+*.old
+
+# Dependências
+vendor/
+
+# Apache
+.htaccess.bak
+
+# Banco local
+*.sqlite
+*.db
+
+# Arquivos temporários
+*.tmp
+
+# Python
+__pycache__/
+*.pyc
