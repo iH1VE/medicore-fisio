@@ -1,0 +1,1419 @@
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>MediCore - Sistema Clínico</title>
+<!-- Bibliotecas -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+<link href="style.css" rel="stylesheet"/>
+</head>
+<body>
+<!-- LOGIN MODAL -->
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm" id="modal-login" style="background-color: rgba(111,75,54,0.2);">
+    <div class="bg-white p-8 rounded-3xl shadow-2xl w-96 text-center" style="border: 1px solid rgba(203,229,247,0.3);">
+        <div class="w-20 h-20 bg-[#6F4B36] rounded-2xl mx-auto mb-4 flex items-center justify-center">
+            <i class="fa-solid fa-stethoscope text-4xl text-white"></i>
+        </div>
+        <h2 class="font-heading text-3xl font-bold text-[#6F4B36] mb-2">MediCore</h2>
+        <p class="text-sm text-gray-500 mb-6 font-body">Sistema Integrado de Gestão Clínica</p>
+<div class="login-form-fields">
+    <input type="email" id="login-email" placeholder="Email" class="login-input">
+    <input type="password" id="login-senha" placeholder="Senha" class="login-input">
+    <button type="button" id="login-submit" onclick="login()" class="login-submit-btn">Entrar</button>
+</div>
+    </div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div class="hidden fixed bottom-6 right-6 bg-[#6F4B36] text-white px-6 py-4 rounded-2xl shadow-xl z-50 toast-animate" id="toast-notification" style="border: 1px solid rgba(255,255,255,0.1);">
+    <i class="fa-solid fa-circle-check mr-2"></i>
+    <span>Sucesso</span>
+</div>
+
+<!-- APP SHELL -->
+<div class="app-shell">
+    <aside class="sidebar no-print">
+        <div class="sidebar-brand">
+            <div class="brand-logo-wrap">
+                <img src="logo.png" alt="Logo da clínica" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+                <div class="brand-logo-fallback">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+            </div>
+            <div class="brand-text">
+                <h1 class="font-heading">MediCore AI</h1>
+                <div class="badge badge-secondary text-xs" id="user-role-badge">Aguardando login...</div>
+            </div>
+        </div>
+
+                <nav class="sidebar-nav">
+            <button class="nav-link" onclick="showSection('dashboard')"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></button>
+            <button class="nav-link" onclick="showSection('estrategia')"><i class="fa-solid fa-chart-area"></i><span>Estratégia</span></button>
+            <button class="nav-link" onclick="showSection('protocolos')"><i class="fa-solid fa-clipboard-list"></i><span>Protocolos</span></button>
+            <button class="nav-link" onclick="showSection('pacientes')"><i class="fa-solid fa-users"></i><span>Pacientes</span></button>
+            <button class="nav-link" onclick="showSection('agenda')"><i class="fa-regular fa-calendar-days"></i><span>Agenda</span></button>
+            <button class="nav-link" onclick="showSection('atendimento')"><i class="fa-solid fa-stethoscope"></i><span>Atendimento</span></button>
+            <button class="nav-link" onclick="showSection('estoque')"><i class="fa-solid fa-boxes-stacked"></i><span>Estoque</span></button>
+            <button class="nav-link" onclick="showSection('financeiro')"><i class="fa-solid fa-wallet"></i><span>Financeiro</span></button>
+            <button class="nav-link hidden" id="nav-cupons-btn" onclick="showSection('cupons')"><i class="fa-solid fa-ticket"></i><span>Cupons</span></button>
+            <button class="nav-link" id="nav-recompensas-btn" onclick="showSection('recompensas-admin')"><i class="fa-solid fa-gift"></i><span>Recompensas</span></button>
+            <button class="nav-link" onclick="showSection('relatorios')"><i class="fa-solid fa-file-invoice"></i><span>Relatórios</span></button>
+            <button class="nav-link" onclick="showSection('auditoria')"><i class="fa-solid fa-clipboard-check"></i><span>Auditoria</span></button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-user-card">
+                <div class="flex items-center justify-between gap-3">
+                    <span class="font-body text-sm text-gray-600" id="header-username">
+                        <i class="fa-regular fa-user mr-2"></i>Usuário
+                    </span>
+                    <div class="hidden bg-[#6F4B36] text-white rounded-full w-7 h-7 flex items-center justify-center text-xs font-bold cursor-pointer" id="alert-badge" onclick="showSection('dashboard');" title="Alertas de Estoque">
+                        <span>0</span>
+                    </div>
+                </div>
+                <button class="btn-secondary sidebar-logout" onclick="logout()">
+                    <i class="fa-solid fa-power-off mr-2"></i>Sair
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <div class="app-content">
+        <header class="content-header">
+            <div>
+                <p class="content-eyebrow">Sistema Integrado de Gestão Clínica</p>
+                <h2 class="section-title mb-0" id="page-title">Visão Geral</h2>
+            </div>
+        </header>
+
+        <main class="layout-container content-main py-8">
+    <!-- DASHBOARD -->
+
+    <section id="dashboard" class="gap-section">
+        <!-- Alertas de Estoque -->
+        <div class="hidden alert-box mb-8" id="dashboard-alerts">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-8 h-8 bg-[#6F4B36] rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-circle-exclamation text-white text-sm"></i>
+                </div>
+                <h3 class="font-heading font-bold text-[#6F4B36]">Alertas de Estoque</h3>
+            </div>
+            <div class="space-y-2 text-sm text-gray-700" id="alerts-list"></div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div class="kpi-card">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="kpi-label">Total Pacientes</div>
+                    <div class="w-10 h-10 bg-[#CBE5F7] rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-users text-[#6F4B36] text-lg"></i>
+                    </div>
+                </div>
+                <div class="kpi-value" id="kpi-total-patients">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="kpi-label">Agendamentos Hoje</div>
+                    <div class="w-10 h-10 bg-[#CBE5F7] rounded-xl flex items-center justify-center">
+                        <i class="fa-regular fa-calendar-check text-[#6F4B36] text-lg"></i>
+                    </div>
+                </div>
+                <div class="kpi-value" id="kpi-today-appts">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="kpi-label">Faturamento Total</div>
+                    <div class="w-10 h-10 bg-[#CBE5F7] rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-chart-pie text-[#6F4B36] text-lg"></i>
+                    </div>
+                </div>
+                <div class="kpi-value" id="kpi-sales">R$ 0,00</div>
+            </div>
+        </div>
+
+        <!-- Oportunidades de Retorno -->
+        <div class="card p-6">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="font-heading font-bold text-lg text-[#6F4B36] flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        Oportunidades de Retorno
+                    </h3>
+                    <p class="font-body text-sm text-gray-500">Pacientes inativos há mais de 3 meses</p>
+                </div>
+                <span class="badge badge-primary" id="inactive-count">0 encontrados</span>
+            </div>
+            <div class="max-h-64 overflow-y-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr>
+                            <th class="text-left">Paciente</th>
+                            <th class="text-left">Telefone</th>
+                            <th class="text-left">Última Visita</th>
+                            <th class="text-center">Dias Inativo</th>
+                            <th class="text-center">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#CBE5F7] divide-opacity-30" id="table-inactive-patients"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROTOCOLOS -->
+    <section class="hidden gap-section" id="protocolos">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h3 class="font-heading font-bold text-lg text-[#6F4B36]">Gestão de Protocolos</h3>
+                <p class="font-body text-sm text-gray-500">Defina os pacotes de serviços</p>
+            </div>
+            <button class="btn-primary" onclick="openModal('modal-novo-protocolo')">
+                <i class="fa-solid fa-plus mr-2"></i>Novo Protocolo
+            </button>
+        </div>
+        <div class="table-container">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr>
+                        <th class="text-left">Nome</th>
+                        <th class="text-left">Serviços</th>
+                        <th class="text-right">Valor</th>
+                        <th class="text-center">Duração</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#CBE5F7] divide-opacity-30" id="table-protocolos-body"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- AGENDA -->
+    <section class="hidden gap-section" id="agenda">
+        <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-4">
+                <h3 class="font-heading font-bold text-xl text-[#6F4B36]" id="calendar-month-year"></h3>
+                <div class="flex gap-2">
+                    <button class="btn-secondary !px-3 !py-2" onclick="changeMonth(-1)">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button class="btn-secondary !px-4 !py-2" onclick="goToToday()">Hoje</button>
+                    <button class="btn-secondary !px-3 !py-2" onclick="changeMonth(1)">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            <button class="btn-primary" onclick="openModal('modal-agendamento')">
+                <i class="fa-solid fa-plus mr-2"></i>Novo Agendamento
+            </button>
+        </div>
+
+        <div class="card p-6 mb-6">
+            <div class="calendar-header">
+                <div>DOM</div>
+                <div>SEG</div>
+                <div>TER</div>
+                <div>QUA</div>
+                <div>QUI</div>
+                <div>SEX</div>
+                <div>SÁB</div>
+            </div>
+            <div class="calendar-grid" id="calendar-grid"></div>
+        </div>
+
+        <div class="card p-6">
+            <h3 class="font-heading font-bold text-lg text-[#6F4B36] mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-user-clock"></i>
+                Fila de Espera / Check-in
+            </h3>
+            <div class="flex flex-wrap gap-4 min-h-[50px]" id="fila-espera-list"></div>
+        </div>
+    </section>
+
+    <!-- ESTRATÉGIA -->
+    <section class="hidden gap-section" id="estrategia">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="card p-6">
+                <h3 class="font-heading font-bold text-lg text-[#6F4B36] mb-4">Balancete Anual</h3>
+                <div class="h-64 relative">
+                    <canvas id="chart-financeiro-anual"></canvas>
+                </div>
+            </div>
+            <div class="card p-6">
+                <h3 class="font-heading font-bold text-lg text-[#6F4B36] mb-4">Crescimento de Pacientes</h3>
+                <div class="h-64 relative">
+                    <canvas id="chart-pacientes-anual"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-heading font-bold text-lg text-[#6F4B36]">DRE Simplificado</h3>
+                <button class="btn-secondary" onclick="window.print()">
+                    <i class="fa-solid fa-print mr-2"></i>Imprimir
+                </button>
+            </div>
+            <table class="w-full text-sm">
+                <thead>
+                    <tr>
+                        <th class="text-left">Ano</th>
+                        <th class="text-right text-[#6F4B36]">Receita</th>
+                        <th class="text-right text-gray-600">Custos</th>
+                        <th class="text-right text-green-600">Margem</th>
+                        <th class="text-center">Novos Pacientes</th>
+                        <th class="text-center">Ticket Médio</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#CBE5F7] divide-opacity-30 font-mono" id="table-estrategia-body"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- PACIENTES -->
+    <section class="hidden gap-section" id="pacientes">
+        <div class="flex gap-4 mb-6 no-print">
+            <div class="relative flex-1">
+                <i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input class="w-full pl-10 pr-4 py-3 rounded-2xl border border-[#CBE5F7] focus:border-[#6F4B36] focus:ring-2 focus:ring-[#6F4B36] focus:ring-opacity-20" 
+                       id="search-paciente" 
+                       oninput="renderPacientes()" 
+                       placeholder="Pesquisar pacientes..."/>
+            </div>
+            <button class="btn-primary" onclick="openModal('modal-paciente')">
+                <i class="fa-solid fa-plus mr-2"></i>Novo Paciente
+            </button>
+        </div>
+        
+        <div class="table-container">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr>
+                        <th class="text-left">Nome</th>
+                        <th class="text-left">CPF</th>
+                        <th class="text-left">Nascimento</th>
+                        <th class="text-left">Tipo</th>
+                        <th class="text-center">Cadastro</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#CBE5F7] divide-opacity-30" id="table-pacientes-body"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ATENDIMENTO -->
+    <section class="hidden gap-section" id="atendimento">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1">
+                <div class="card p-6">
+                    <h3 class="font-heading font-bold text-lg text-[#6F4B36] mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-users-between-lines"></i>
+                        Fila de Atendimento
+                    </h3>
+                    <div class="space-y-3" id="today-appointments-list"></div>
+                </div>
+            </div>
+            
+            <div class="lg:col-span-2">
+                <div class="card p-6">
+                    <!-- Estado Vazio -->
+                    <div class="h-64 flex flex-col items-center justify-center text-gray-400" id="area-clinica-empty">
+                        <div class="w-20 h-20 bg-[#FCF7F9] rounded-full flex items-center justify-center mb-4">
+                            <i class="fa-solid fa-user-doctor text-3xl text-[#6F4B36] opacity-30"></i>
+                        </div>
+                        <p class="font-body text-gray-500">Selecione um paciente para iniciar o atendimento</p>
+                    </div>
+                    
+                    <!-- Estado Ativo -->
+                    <div class="hidden" id="area-clinica-active">
+                        <!-- Header do Paciente -->
+                        <div class="flex justify-between items-start border-b border-[#CBE5F7] pb-6 mb-6">
+                            <div>
+                                <h4 class="font-heading text-2xl font-bold text-[#6F4B36]" id="current-patient-name"></h4>
+                                <div class="flex items-center gap-3 mt-2">
+                                    <span class="font-body text-sm text-gray-500">
+                                        <i class="fa-regular fa-id-card mr-1"></i>
+                                        <span id="current-patient-cpf"></span>
+                                    </span>
+                                    <span class="badge badge-secondary" id="atendimento-prioridade-badge"></span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="badge badge-primary mb-2" id="atendimento-tipo"></div>
+                                <div class="font-heading font-bold text-xl text-[#6F4B36]">
+                                    <span id="atendimento-valor">R$ 0,00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Anamnese -->
+                        <div class="mb-8 bg-[#FCF7F9] rounded-2xl p-5 border border-[#CBE5F7] border-opacity-30">
+                            <div class="flex justify-between items-center mb-3">
+                                <h5 class="font-heading font-bold text-[#6F4B36] flex items-center gap-2">
+                                    <i class="fa-solid fa-clipboard-user"></i>
+                                    Anamnese
+                                </h5>
+                                <button class="btn-secondary !py-2 !px-4 text-sm" onclick="openQuestionnaire()">
+                                    <i class="fa-solid fa-pen mr-2"></i>Preencher
+                                </button>
+                            </div>
+                            <div class="font-body text-sm text-gray-600 bg-white p-4 rounded-xl border border-[#CBE5F7] border-opacity-30 min-h-[60px]" id="anamnese-preview">
+                                Nenhum registro de anamnese.
+                            </div>
+                        </div>
+
+                        <!-- Histórico Recente -->
+                        <div class="mb-8">
+                            <h5 class="font-heading font-bold text-[#6F4B36] mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                                Histórico Recente
+                            </h5>
+                            <div class="space-y-2 max-h-40 overflow-y-auto pr-2" id="historico-recente-list"></div>
+                        </div>
+
+                        <!-- Prescrição -->
+                        <div class="mb-8">
+                            <h5 class="font-heading font-bold text-[#6F4B36] mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-prescription"></i>
+                                Prescrição
+                            </h5>
+                            <div class="flex gap-3 mb-3">
+                                <select class="flex-1" id="consult-medication">
+                                    <option value="">Selecione um medicamento...</option>
+                                </select>
+                                <input class="w-24 text-center" id="consult-qty" type="number" value="1" min="1"/>
+                                <button class="btn-primary !px-4 !py-2" onclick="addMedicationToPrescription()">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                            <div class="bg-[#FCF7F9] p-4 rounded-xl border border-[#CBE5F7] border-opacity-30 text-sm" id="prescription-list"></div>
+                        </div>
+
+                        <!-- Exames -->
+                        <div class="mb-8">
+                            <h5 class="font-heading font-bold text-[#6F4B36] mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-flask"></i>
+                                Exames
+                            </h5>
+                            <div class="flex gap-3 mb-3">
+                                <select class="flex-1" id="consult-exam">
+                                    <option value="">Selecione um exame...</option>
+                                </select>
+                                <button class="btn-secondary !px-4 !py-2" onclick="addExamToConsultation()">
+                                    <i class="fa-solid fa-plus"></i> Adicionar
+                                </button>
+                            </div>
+                            <div class="bg-[#FCF7F9] p-4 rounded-xl border border-[#CBE5F7] border-opacity-30 text-sm" id="exams-list"></div>
+                        </div>
+
+                        <!-- Totais e Finalização -->
+                        <div class="bg-[#FCF7F9] rounded-2xl p-6 mt-6 border border-[#CBE5F7] border-opacity-30">
+                            <div class="space-y-2 mb-4">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Medicamentos:</span>
+                                    <span class="font-mono font-bold" id="total-meds">R$ 0,00</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Exames:</span>
+                                    <span class="font-mono font-bold" id="total-exams">R$ 0,00</span>
+                                </div>
+                                <div class="flex justify-between font-heading font-bold text-lg pt-3 mt-2 border-t border-[#CBE5F7]">
+                                    <span class="text-[#6F4B36]">Total:</span>
+                                    <span class="text-[#6F4B36]" id="total-final">R$ 0,00</span>
+                                </div>
+                            </div>
+                            <button class="btn-primary w-full" id="btn-finalizar-pagar" onclick="proceedToPayment()">
+                                <i class="fa-solid fa-check-circle mr-2"></i>Finalizar e Pagar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ESTOQUE -->
+    <section class="hidden gap-section" id="estoque">
+        <div class="flex gap-4 mb-6 no-print">
+            <div class="relative flex-1">
+                <i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input class="w-full pl-10 pr-4 py-3 rounded-2xl border border-[#CBE5F7] focus:border-[#6F4B36] focus:ring-2 focus:ring-[#6F4B36] focus:ring-opacity-20" 
+                       id="search-estoque" 
+                       oninput="renderEstoque()" 
+                       placeholder="Pesquisar no estoque..."/>
+            </div>
+            <button class="btn-primary" onclick="openModal('modal-estoque')">
+                <i class="fa-solid fa-boxes mr-2"></i>Adicionar Lote
+            </button>
+        </div>
+        
+        <div class="table-container">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr>
+                        <th class="text-left">Nome</th>
+                        <th class="text-left">Lote</th>
+                        <th class="text-left">Validade</th>
+                        <th class="text-center">Qtd</th>
+                        <th class="text-right">Custo</th>
+                        <th class="text-right">Venda</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#CBE5F7] divide-opacity-30" id="table-estoque-body"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- FINANCEIRO -->
+    <section class="hidden gap-section" id="financeiro">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 no-print">
+            <div>
+                <h3 class="font-heading font-bold text-lg text-[#6F4B36]">Financeiro</h3>
+                <p class="font-body text-sm text-gray-500">Controle receitas, despesas, pendências e exporte o relatório do período.</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <button class="btn-primary" onclick="openFinancialModal()">
+                    <i class="fa-solid fa-plus mr-2"></i>Novo lançamento
+                </button>
+                <button class="btn-secondary" onclick="exportFinancialExcel()">
+                    <i class="fa-regular fa-file-excel mr-2"></i>Excel
+                </button>
+                <button class="btn-secondary" onclick="exportFinancialPDF()">
+                    <i class="fa-regular fa-file-pdf mr-2"></i>PDF
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6" id="financial-summary-cards">
+            <div class="card p-5">
+                <div class="text-xs uppercase tracking-wide text-gray-500">Receitas</div>
+                <div id="financial-total-receitas" class="font-heading text-2xl font-bold text-[#6F4B36] mt-2">R$ 0,00</div>
+            </div>
+            <div class="card p-5">
+                <div class="text-xs uppercase tracking-wide text-gray-500">Despesas</div>
+                <div id="financial-total-despesas" class="font-heading text-2xl font-bold text-red-600 mt-2">R$ 0,00</div>
+            </div>
+            <div class="card p-5">
+                <div class="text-xs uppercase tracking-wide text-gray-500">Saldo líquido</div>
+                <div id="financial-total-sum" class="font-heading text-2xl font-bold text-emerald-600 mt-2">R$ 0,00</div>
+            </div>
+            <div class="card p-5">
+                <div class="text-xs uppercase tracking-wide text-gray-500">Pendências</div>
+                <div id="financial-total-pendencias" class="font-heading text-2xl font-bold text-amber-600 mt-2">R$ 0,00</div>
+            </div>
+        </div>
+
+        <div class="card p-5 mb-6 no-print">
+            <div class="finance-filters-grid">
+                <div>
+                    <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Agrupar por</label>
+                    <select id="financial-filter-mode">
+                        <option value="month">Mês</option>
+                        <option value="year">Ano</option>
+                    </select>
+                </div>
+                <div id="financial-filter-month-wrap">
+                    <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Mês</label>
+                    <select id="financial-filter-month">
+                        <option value="0">Janeiro</option>
+                        <option value="1">Fevereiro</option>
+                        <option value="2">Março</option>
+                        <option value="3">Abril</option>
+                        <option value="4">Maio</option>
+                        <option value="5">Junho</option>
+                        <option value="6">Julho</option>
+                        <option value="7">Agosto</option>
+                        <option value="8">Setembro</option>
+                        <option value="9">Outubro</option>
+                        <option value="10">Novembro</option>
+                        <option value="11">Dezembro</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Ano</label>
+                    <select id="financial-filter-year"></select>
+                </div>
+                <div>
+                    <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Tipo</label>
+                    <select id="financial-filter-type">
+                        <option value="all">Todos</option>
+                        <option value="receita">Receita</option>
+                        <option value="despesa">Despesa</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Categoria</label>
+                    <select id="financial-filter-category">
+                        <option value="all">Todas</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Status</label>
+                    <select id="financial-filter-status">
+                        <option value="all">Todos</option>
+                        <option value="pago">Pago</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="vencido">Vencido</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr>
+                        <th class="text-left">Data</th>
+                        <th class="text-left">Descrição</th>
+                        <th class="text-left">Tipo</th>
+                        <th class="text-left">Categoria</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-left">Origem</th>
+                        <th class="text-right">Valor</th>
+                        <th class="text-center">Pagamento</th>
+                        <th class="text-center no-print">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#CBE5F7] divide-opacity-30" id="table-financial-body"></tbody>
+                <tfoot>
+                    <tr class="bg-[#FCF7F9]">
+                        <td colspan="6" class="text-right font-heading font-bold text-[#6F4B36]">Saldo do período:</td>
+                        <td class="text-right font-heading font-bold text-[#6F4B36]" id="financial-table-total-sum">R$ 0,00</td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </section>
+
+    
+<!-- CUPONS -->
+<section class="hidden gap-section" id="cupons">
+    <div class="flex justify-between mb-6">
+        <h3 class="font-heading text-lg font-bold text-[#6F4B36]">Cupons</h3>
+        <button class="btn-primary" onclick="openModal('modal-cupom')">
+            Novo Cupom
+        </button>
+    </div>
+
+    <div class="table-container">
+        <table class="w-full text-sm">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                    <th>Validade</th>
+                </tr>
+            </thead>
+            <tbody id="table-cupons-body"></tbody>
+        </table>
+    </div>
+</section>
+
+<!-- RELATÓRIOS -->
+    <section class="hidden gap-section" id="relatorios">
+        <div class="flex justify-between items-center mb-6 no-print">
+            <div>
+                <h3 class="font-heading font-bold text-lg text-[#6F4B36]">Consolidado por Paciente</h3>
+                <p class="font-body text-sm text-gray-500">Histórico completo de atendimentos e valores</p>
+            </div>
+            <div class="flex gap-3">
+                <button class="btn-secondary" onclick="exportConsolidatedExcel()">
+                    <i class="fa-regular fa-file-excel mr-2"></i>Exportar Lista
+                </button>
+                <button class="btn-secondary" onclick="exportConsolidatedPDF()">
+                    <i class="fa-regular fa-file-pdf mr-2"></i>Exportar PDF
+                </button>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr>
+                        <th class="text-left">Paciente</th>
+                        <th class="text-left">CPF</th>
+                        <th class="text-center">Atendimentos</th>
+                        <th class="text-right">Investido</th>
+                        <th class="text-center">Última Visita</th>
+                        <th class="text-center">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#CBE5F7] divide-opacity-30" id="table-relatorios-body"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- AUDITORIA -->
+    <section class="hidden gap-section" id="auditoria">
+        <div class="table-container">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr>
+                        <th class="text-left">Data/Hora</th>
+                        <th class="text-left">Usuário</th>
+                        <th class="text-left">Ação</th>
+                        <th class="text-left">Detalhes</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#CBE5F7] divide-opacity-30 font-mono text-xs" id="table-auditoria-body"></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<!-- MODAIS -->
+
+<!-- Modal Novo Protocolo -->
+<div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-novo-protocolo" style="background-color: rgba(111,75,54,0.2);">
+    <form class="bg-white p-8 rounded-3xl shadow-2xl w-96 modal-content" id="form-novo-protocolo">
+        <h3 class="font-heading text-2xl font-bold text-[#6F4B36] mb-6">Novo Protocolo</h3>
+
+        <div class="space-y-4">
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Nome do Protocolo</label>
+                <input class="w-full" id="prot-nome" required placeholder="Ex: Emagrecimento 60 dias"/>
+            </div>
+
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Valor</label>
+                <input class="w-full" id="prot-valor" required step="0.01" type="number" placeholder="0,00"/>
+            </div>
+
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Duração (dias)</label>
+                <input class="w-full" id="prot-dias" type="number" value="30"/>
+            </div>
+
+            <div class="bg-[#FCF7F9] p-4 rounded-2xl border border-[#CBE5F7]">
+                <label class="font-heading text-sm font-bold text-[#6F4B36] block mb-3">Créditos do Protocolo:</label>
+
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm text-gray-600">Consulta médica</span>
+                    <input class="w-20 text-center" id="prot-cred-consulta" type="number" value="0" min="0"/>
+                </div>
+
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm text-gray-600">Nutrição</span>
+                    <input class="w-20 text-center" id="prot-cred-nutri" type="number" value="0" min="0"/>
+                </div>
+
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm text-gray-600">Exames</span>
+                    <input class="w-20 text-center" id="prot-cred-exame" type="number" value="0" min="0"/>
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Procedimentos</span>
+                    <input class="w-20 text-center" id="prot-cred-proced" type="number" value="0" min="0"/>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-8">
+            <button class="btn-secondary" onclick="closeModal('modal-novo-protocolo')" type="button">Cancelar</button>
+            <button class="btn-primary" type="submit">Salvar Protocolo</button>
+        </div>
+    </form>
+</div>
+
+<!-- Modal Paciente -->
+<div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-paciente" style="background-color: rgba(111,75,54,0.2);">
+    <form class="bg-white p-8 rounded-3xl shadow-2xl w-96 max-h-[90vh] overflow-y-auto modal-content" id="form-paciente">
+        <h3 class="font-heading text-2xl font-bold text-[#6F4B36] mb-6" id="modal-paciente-title">Novo Paciente</h3>
+        <input id="pac-id" type="hidden"/>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Nome Completo *</label>
+                <input class="w-full" id="pac-nome" required placeholder="Digite o nome completo"/>
+            </div>
+            
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Data de Nascimento *</label>
+                <input class="w-full" id="pac-nasc" required type="date"/>
+            </div>
+            
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">CPF *</label>
+                <input class="w-full" id="pac-cpf" required placeholder="000.000.000-00"/>
+            </div>
+            
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Telefone</label>
+                <input class="w-full" id="pac-tel" placeholder="(00) 00000-0000"/>
+            </div>
+
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Email</label>
+                <input class="w-full" id="pac-email" type="email" placeholder="paciente@email.com"/>
+            </div>
+            
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Endereço *</label>
+                <textarea class="w-full" id="pac-endereco" required rows="2" placeholder="Rua, número, bairro, cidade"></textarea>
+            </div>
+            
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Tipo de Atendimento *</label>
+                <select class="w-full" id="pac-tipo" required>
+                    <option value="">Selecione...</option>
+                    <option value="Particular">Particular</option>
+                    <option value="Convênio">Convênio</option>
+                </select>
+            </div>
+            
+            <div class="bg-[#FCF7F9] p-4 rounded-2xl border border-[#CBE5F7]">
+                <label class="flex items-center gap-3">
+                    <input class="w-5 h-5 accent-[#6F4B36]" id="pac-lgpd" type="checkbox"/>
+                    <span class="font-body text-sm text-gray-700">Declaro que o paciente está ciente e concorda com a LGPD</span>
+                </label>
+            </div>
+        </div>
+        
+        <div id="patient-log-container" class="mt-6 border-t pt-4">
+            <h4 class="font-heading text-sm font-bold text-[#6F4B36] mb-3">Histórico do Paciente</h4>
+            <div id="patient-log-list" class="space-y-2 text-sm text-gray-700">
+                <div class="text-gray-400">Nenhum histórico</div>
+            </div>
+        </div>
+
+        <div id="patient-log-container" class="mt-6 border-t pt-4">
+            <h4 class="font-heading text-sm font-bold text-[#6F4B36] mb-3">Histórico do Paciente</h4>
+            <div id="patient-log-list" class="space-y-2 text-sm text-gray-700">
+                <div class="text-gray-400">Nenhum histórico</div>
+            </div>
+        </div>
+
+        <div id="patient-log-container" class="mt-6 border-t pt-4">
+            <h4 class="font-heading text-sm font-bold text-[#6F4B36] mb-3">Histórico do Paciente</h4>
+            <div id="patient-log-list" class="space-y-2 text-sm text-gray-700">
+                <div class="text-gray-400">Nenhum histórico</div>
+            </div>
+        </div>
+
+        <div id="patient-log-container" class="mt-6 border-t pt-4">
+            <h4 class="font-heading text-sm font-bold text-[#6F4B36] mb-3">Histórico do Paciente</h4>
+            <div id="patient-log-list" class="space-y-2 text-sm text-gray-700">
+                <div class="text-gray-400">Nenhum histórico</div>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-8">
+            <button class="btn-secondary" onclick="closeModal('modal-paciente')" type="button">Cancelar</button>
+            <button class="btn-primary" type="submit">Salvar Paciente</button>
+        </div>
+<div id="patient-log-container" class="mt-6 border-t pt-4">
+<h4 class="font-bold text-sm text-gray-600 mb-2">Histórico</h4>
+<div id="patient-log-list" class="space-y-2 text-sm text-gray-700"></div>
+</div>
+    </form>
+</div>
+
+<!-- Modal Agendamento -->
+<div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-agendamento" style="background-color: rgba(111,75,54,0.2);">
+    <form class="bg-white p-8 rounded-3xl shadow-2xl w-96 max-h-[95vh] overflow-y-auto modal-content" id="form-agendamento">
+        <h3 class="font-heading text-2xl font-bold text-[#6F4B36] mb-6">Novo Agendamento</h3>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Paciente</label>
+                <select class="w-full" id="ag-paciente" onchange="checkPatientLastVisit()" required>
+                    <option value="">Selecione um paciente...</option>
+                </select>
+                <div class="text-xs mt-2 hidden font-bold text-[#6F4B36]" id="ag-patient-alert"></div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Data</label>
+                    <input class="w-full" id="ag-data" required type="date"/>
+                </div>
+                <div>
+                    <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Hora</label>
+                    <input class="w-full" id="ag-hora" required type="time"/>
+                    <div id="ag-sugestoes" class="mt-2 text-xs text-gray-500"></div>
+                </div>
+            </div>
+            
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Prioridade</label>
+                <select class="w-full" id="ag-prioridade">
+                    <option value="Normal">Normal</option>
+                    <option value="Urgência">Urgência</option>
+                    <option value="Emergência">Emergência</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Motivo</label>
+                <input class="w-full" id="ag-motivo" required placeholder="Ex: Consulta de rotina"/>
+            </div>
+            
+            <div class="bg-[#FCF7F9] p-4 rounded-2xl border border-[#CBE5F7]">
+                <label class="font-heading text-sm font-bold text-[#6F4B36] block mb-2">Vínculo</label>
+                <select class="w-full bg-white" id="ag-vinculo" onchange="toggleConsultValue()">
+                    <option value="AVULSO">Avulso</option>
+                </select>
+                <div class="text-xs mt-2 hidden font-bold text-[#6F4B36]" id="ag-credit-info"></div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Tipo</label>
+                    <select class="w-full" id="ag-tipo" onchange="toggleConsultValue()">
+                        <option value="Consulta">Consulta</option>
+                        <option value="Nutricionista">Nutrição</option>
+                        <option value="Exame">Exame</option>
+                        <option value="Procedimento">Procedimento</option>
+                        <option value="Retorno">Retorno</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Valor</label>
+                    <input class="w-full" id="ag-valor" step="0.01" type="number" value="150.00"/>
+                </div>
+            </div>
+            
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Sessões</label>
+                <div class="flex items-center gap-3">
+                    <input class="w-24 text-center" id="ag-qtd-sessoes" max="50" min="1" type="number" value="1"/>
+                    <span class="text-sm text-gray-500">(semanais)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex justify-end gap-3 mt-8">
+            <button class="btn-secondary" onclick="closeModal('modal-agendamento')" type="button">Cancelar</button>
+            <button class="btn-primary" type="submit">Confirmar</button>
+        </div>
+<div id="patient-log-container" class="mt-6 border-t pt-4">
+<h4 class="font-bold text-sm text-gray-600 mb-2">Histórico</h4>
+<div id="patient-log-list" class="space-y-2 text-sm text-gray-700"></div>
+</div>
+    </form>
+</div>
+
+<!-- Modal Estoque -->
+<div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-estoque" style="background-color: rgba(111,75,54,0.2);">
+    <form class="bg-white p-8 rounded-3xl shadow-2xl w-96 modal-content" id="form-estoque">
+        <h3 class="font-heading text-2xl font-bold text-[#6F4B36] mb-6">Adicionar ao Estoque</h3>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Nome do Produto</label>
+                <input class="w-full" id="est-nome" required placeholder="Ex: Dipirona 500mg"/>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Lote</label>
+                    <input class="w-full" id="est-lote" placeholder="Ex: L100"/>
+                </div>
+                <div>
+                    <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Validade</label>
+                    <input class="w-full" id="est-validade" required type="date"/>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Quantidade</label>
+                    <input class="w-full" id="est-qtd" required type="number" placeholder="0"/>
+                </div>
+                <div>
+                    <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Estoque Mínimo</label>
+                    <input class="w-full" id="est-min" type="number" value="10"/>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Custo Unit.</label>
+                    <input class="w-full" id="est-custo" required step="0.01" type="number" placeholder="0.00"/>
+                </div>
+                <div>
+                    <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Preço Venda</label>
+                    <input class="w-full" id="est-preco" required step="0.01" type="number" placeholder="0.00"/>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex justify-end gap-3 mt-8">
+            <button class="btn-secondary" onclick="closeModal('modal-estoque')" type="button">Cancelar</button>
+            <button class="btn-primary" type="submit">Adicionar</button>
+        </div>
+<div id="patient-log-container" class="mt-6 border-t pt-4">
+<h4 class="font-bold text-sm text-gray-600 mb-2">Histórico</h4>
+<div id="patient-log-list" class="space-y-2 text-sm text-gray-700"></div>
+</div>
+    </form>
+</div>
+
+<!-- Modal Pagamento -->
+<div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-pagamento" style="background-color: rgba(111,75,54,0.2);">
+    <div class="bg-white p-8 rounded-3xl shadow-2xl w-96 text-center modal-content">
+        <div class="w-16 h-16 bg-[#6F4B36] rounded-2xl mx-auto mb-4 flex items-center justify-center">
+            <i class="fa-solid fa-credit-card text-2xl text-white"></i>
+        </div>
+        
+        <h3 class="font-heading text-2xl font-bold text-[#6F4B36] mb-6">Confirmar Pagamento</h3>
+        
+        <div class="bg-[#FCF7F9] p-6 rounded-2xl mb-6 border border-[#CBE5F7]">
+            <div class="font-body text-sm text-gray-500 mb-2">Valor Total</div>
+            <div class="font-heading text-4xl font-bold text-[#6F4B36]" id="pay-total-val">R$ 0,00</div>
+        </div>
+        
+        <div class="text-left mb-4">
+            <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Forma de Pagamento</label>
+            <select class="w-full" id="pay-method">
+                <option>Dinheiro</option>
+                <option>Cartão</option>
+                <option>Pix</option>
+            </select>
+        </div>
+        
+        <div class="text-left mb-6">
+            <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Parcelas</label>
+            <input class="w-full" id="pay-installments" type="number" value="1" min="1" max="12"/>
+        </div>
+        
+        <div class="text-left mb-6 border-t pt-4">
+            <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Cupom de Desconto</label>
+            <div class="flex gap-2">
+                <input class="w-full" id="pag-cupom" placeholder="Digite o cupom"/>
+                <button class="btn-secondary" type="button" onclick="applyCoupon()">Aplicar</button>
+            </div>
+            <div id="cupom-feedback" class="text-xs text-gray-500 mt-2"></div>
+        </div>
+
+        <div class="flex gap-3 mt-6">
+            <button class="btn-secondary flex-1" onclick="closeModal('modal-pagamento')">Cancelar</button>
+            <button class="btn-primary flex-1" onclick="confirmPayment()">Pagar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Questionário Anamnese -->
+<div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-questionnaire" style="background-color: rgba(111,75,54,0.2);">
+    <form class="bg-white p-8 rounded-3xl shadow-2xl w-[600px] max-h-[90vh] flex flex-col modal-content" id="form-questionnaire">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="font-heading text-2xl font-bold text-[#6F4B36]">Anamnese</h3>
+            <button class="text-gray-400 hover:text-[#6F4B36] transition-colors" onclick="closeModal('modal-questionnaire')" type="button">
+                <i class="fa-solid fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <div class="space-y-4 overflow-y-auto flex-1 pr-2" id="questions-container"></div>
+        
+        <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-[#CBE5F7]">
+            <button class="btn-secondary" onclick="closeModal('modal-questionnaire')" type="button">Fechar</button>
+            <button class="btn-primary" onclick="saveAnamnese()" type="button">Salvar Anamnese</button>
+        </div>
+<div id="patient-log-container" class="mt-6 border-t pt-4">
+<h4 class="font-bold text-sm text-gray-600 mb-2">Histórico</h4>
+<div id="patient-log-list" class="space-y-2 text-sm text-gray-700"></div>
+</div>
+    </form>
+</div>
+
+<!-- Modal Histórico de Anamnese -->
+<div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-anamnese-history" style="background-color: rgba(111,75,54,0.2);">
+    <div class="bg-white p-8 rounded-3xl shadow-2xl w-11/12 max-w-3xl max-h-[80vh] overflow-y-auto modal-content">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="font-heading text-2xl font-bold text-[#6F4B36]">Histórico de Anamneses</h3>
+            <button class="text-gray-400 hover:text-[#6F4B36] transition-colors" onclick="closeModal('modal-anamnese-history')">
+                <i class="fa-solid fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <div class="space-y-3 text-sm mb-6" id="anamnese-history-list"></div>
+        
+        <div class="border-t border-[#CBE5F7] pt-6">
+            <div class="font-heading font-bold text-[#6F4B36] mb-3">Detalhes do Registro</div>
+            <div class="text-sm bg-[#FCF7F9] p-4 rounded-xl" id="anamnese-detail"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Financeiro -->
+<div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-financeiro" style="background-color: rgba(111,75,54,0.2);">
+    <form class="bg-white p-8 rounded-3xl shadow-2xl w-11/12 max-w-3xl modal-content" id="form-financeiro">
+        <div class="flex justify-between items-start gap-4 mb-6 border-b border-[#CBE5F7] pb-4">
+            <div>
+                <h3 class="font-heading text-2xl font-bold text-[#6F4B36]" id="modal-financeiro-title">Novo Lançamento</h3>
+                <p class="font-body text-sm text-gray-500">Cadastre receitas, despesas e pendências manuais.</p>
+            </div>
+            <button class="text-gray-400 hover:text-[#6F4B36] transition-colors" type="button" onclick="closeModal('modal-financeiro')">
+                <i class="fa-solid fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <input type="hidden" id="fin-id"/>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Data</label>
+                <input id="fin-data" type="date" required />
+            </div>
+            <div>
+                <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Tipo</label>
+                <select id="fin-tipo" required>
+                    <option value="receita">Receita</option>
+                    <option value="despesa">Despesa</option>
+                </select>
+            </div>
+            <div class="md:col-span-2">
+                <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Descrição</label>
+                <input id="fin-descricao" type="text" placeholder="Ex.: Consulta particular, aluguel, compra emergencial" required />
+            </div>
+            <div>
+                <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Categoria</label>
+                <select id="fin-categoria" required>
+                    <option value="consulta">Consulta</option>
+                    <option value="procedimento">Procedimento</option>
+                    <option value="retorno">Retorno</option>
+                    <option value="convenio">Convênio</option>
+                    <option value="venda">Venda</option>
+                    <option value="estoque">Estoque</option>
+                    <option value="salario">Salário</option>
+                    <option value="aluguel">Aluguel</option>
+                    <option value="energia">Energia</option>
+                    <option value="internet">Internet</option>
+                    <option value="impostos">Impostos</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="software">Sistema/Software</option>
+                    <option value="manutencao">Manutenção</option>
+                    <option value="outros">Outros</option>
+                </select>
+            </div>
+            <div>
+                <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Valor</label>
+                <input id="fin-valor" type="number" min="0" step="0.01" placeholder="0,00" required />
+            </div>
+            <div>
+                <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Status</label>
+                <select id="fin-status" required>
+                    <option value="pago">Pago</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="vencido">Vencido</option>
+                </select>
+            </div>
+            <div>
+                <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Pagamento</label>
+                <select id="fin-metodo">
+                    <option value="PIX">PIX</option>
+                    <option value="Cartão">Cartão</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                    <option value="Boleto">Boleto</option>
+                    <option value="Transferência">Transferência</option>
+                    <option value="Conta interna">Conta interna</option>
+                </select>
+            </div>
+            <div>
+                <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Origem</label>
+                <input id="fin-origem" type="text" placeholder="Manual" />
+            </div>
+            <div class="md:col-span-2">
+                <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Observação</label>
+                <textarea id="fin-observacao" rows="3" placeholder="Detalhes adicionais do lançamento"></textarea>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-8">
+            <button class="btn-secondary" type="button" onclick="closeModal('modal-financeiro')">Cancelar</button>
+            <button class="btn-primary" type="submit">Salvar lançamento</button>
+        </div>
+<div id="patient-log-container" class="mt-6 border-t pt-4">
+<h4 class="font-bold text-sm text-gray-600 mb-2">Histórico</h4>
+<div id="patient-log-list" class="space-y-2 text-sm text-gray-700"></div>
+</div>
+    </form>
+</div>
+
+<!-- Modal Relatório Geral -->
+<div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-relatorio-geral" style="background-color: rgba(111,75,54,0.2);">
+    <div class="bg-white p-8 rounded-3xl shadow-2xl w-11/12 max-w-4xl h-[90vh] overflow-y-auto modal-content">
+        <div class="flex justify-between items-start border-b border-[#CBE5F7] pb-6 mb-6">
+            <div>
+                <h1 class="font-heading text-3xl font-bold text-[#6F4B36]">Prontuário</h1>
+                <p class="font-body text-sm text-gray-500 mt-1">Gerado em: <span id="rep-generated-date"></span></p>
+            </div>
+            <div class="text-right">
+                <h2 class="font-heading text-2xl font-bold text-gray-800" id="rep-nome"></h2>
+                <p class="font-body text-sm text-gray-600" id="rep-cpf"></p>
+                <p class="font-body text-sm text-gray-600" id="rep-tel"></p>
+            </div>
+        </div>
+        
+        <div class="mb-8">
+            <h4 class="font-heading font-bold text-[#6F4B36] uppercase text-sm mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-timeline"></i>
+                Linha do Tempo
+            </h4>
+            <div class="relative pl-8 space-y-6" id="timeline-container">
+                <div class="timeline-line"></div>
+            </div>
+        </div>
+        
+        <div class="mb-6">
+            <h4 class="font-heading font-bold text-[#6F4B36] uppercase text-sm mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-sack-dollar"></i>
+                Financeiro
+            </h4>
+            <div class="bg-[#FCF7F9] p-4 rounded-xl mb-4 border border-[#CBE5F7]">
+                <span class="font-body text-sm text-gray-600">Total investido:</span>
+                <span class="font-heading font-bold text-lg text-[#6F4B36] ml-2" id="rep-total-invested"></span>
+            </div>
+            <div class="table-container">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr>
+                            <th class="text-left">Data</th>
+                            <th class="text-left">Serviço</th>
+                            <th class="text-right">Valor</th>
+                            <th class="text-left">Método</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rep-financeiro-body"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="flex justify-end gap-3 mt-8 no-print">
+            <button class="btn-secondary" onclick="window.print()">
+                <i class="fa-solid fa-print mr-2"></i>Imprimir
+            </button>
+            <button class="btn-primary" onclick="closeModal('modal-relatorio-geral')">
+                Fechar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Panel - Painel Rápido do Paciente -->
+<div class="hidden fixed bottom-6 left-6 bg-white p-6 rounded-3xl shadow-2xl w-80 border-2 border-[#CBE5F7] z-40 quick-panel" id="patient-quick-panel">
+    <div class="flex justify-between items-start mb-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-[#6F4B36] rounded-xl flex items-center justify-center">
+                <i class="fa-solid fa-user text-white"></i>
+            </div>
+            <div>
+                <div class="font-heading font-bold text-gray-800" id="quick-name"></div>
+                <div class="font-body text-xs text-gray-500" id="quick-cpf"></div>
+            </div>
+        </div>
+        <button class="text-gray-400 hover:text-[#6F4B36] transition-colors" onclick="document.getElementById('patient-quick-panel').classList.add('hidden')">
+            <i class="fa-solid fa-times"></i>
+        </button>
+    </div>
+    
+    <div class="space-y-3 font-body text-sm text-gray-600 mt-4 mb-4">
+        <div class="badge badge-secondary" id="quick-type-badge"></div>
+        
+        <div class="flex justify-between border-b border-[#CBE5F7] border-opacity-30 pb-2">
+            <span>Telefone:</span>
+            <span class="font-medium text-[#6F4B36]" id="quick-tel"></span>
+        </div>
+        
+        <div class="flex justify-between border-b border-[#CBE5F7] border-opacity-30 pb-2">
+            <span>Última visita:</span>
+            <span class="font-medium text-[#6F4B36]" id="quick-last-visit"></span>
+        </div>
+        
+        <div class="bg-[#FCF7F9] p-3 rounded-xl border border-[#CBE5F7] border-opacity-30">
+            <div class="font-heading font-bold text-[#6F4B36] text-xs mb-1">Última queixa:</div>
+            <div class="font-body text-xs italic text-gray-600" id="quick-last-anamnese">Nenhum registro.</div>
+        </div>
+        
+        <div class="flex flex-wrap gap-1" id="quick-alerts"></div>
+        
+        <div class="flex justify-between pt-2">
+            <span class="font-heading font-bold text-gray-700">Total investido:</span>
+            <span class="font-heading font-bold text-[#6F4B36]" id="quick-total-spent">R$ 0,00</span>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-3 mt-4">
+        <button class="btn-secondary !py-2 text-sm" onclick="openSellProtocolModal()">
+            <i class="fa-solid fa-file-signature mr-2"></i>Vender Protocolo
+        </button>
+        <button class="btn-primary !py-2 text-sm" onclick="openFullReportFromQuick()">
+            <i class="fa-solid fa-file-medical mr-2"></i>Prontuário
+        </button>
+    </div>
+</div>
+
+    </div>
+</div>
+
+<script src="script.js"></script>
+
+<div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-cupom" style="background-color: rgba(111,75,54,0.2);">
+    <form class="bg-white p-8 rounded-3xl shadow-2xl w-96 modal-content" id="form-cupom">
+        <h3 class="font-heading text-2xl font-bold text-[#6F4B36] mb-6">Cadastrar Cupom</h3>
+
+        <div class="space-y-4">
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Código</label>
+                <input class="w-full" id="cupom-codigo" required placeholder="Ex: CLUBE10"/>
+            </div>
+
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Tipo</label>
+                <select class="w-full" id="cupom-tipo">
+                    <option value="percentual">Percentual (%)</option>
+                    <option value="fixo">Valor fixo (R$)</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Valor</label>
+                <input class="w-full" id="cupom-valor" required type="number" step="0.01" placeholder="10"/>
+            </div>
+
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Ativo</label>
+                <select class="w-full" id="cupom-ativo">
+                    <option value="1">Sim</option>
+                    <option value="0">Não</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-8">
+            <button class="btn-secondary" onclick="closeModal('modal-cupom')" type="button">Cancelar</button>
+            <button class="btn-primary" type="submit">Salvar Cupom</button>
+        </div>
+    </form>
+</div>
+
+
+<button id="admin-cupom-btn"
+    onclick="openModal('modal-cupom')"
+    class="hidden fixed bottom-6 left-6 btn-primary z-40">
+    Cupons
+</button>
+
+
+<div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-venda-protocolo" style="background-color: rgba(111,75,54,0.2);">
+    <form class="bg-white p-8 rounded-3xl shadow-2xl w-[520px] max-w-[95vw] modal-content" id="form-venda-protocolo">
+        <h3 class="font-heading text-2xl font-bold text-[#6F4B36] mb-6">Vender Protocolo</h3>
+
+        <div class="space-y-4">
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Paciente</label>
+                <input class="w-full bg-gray-50" id="sell-prot-paciente" readonly />
+            </div>
+
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Protocolo</label>
+                <select class="w-full" id="sell-prot-select" required></select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Valor base</label>
+                    <input class="w-full bg-gray-50" id="sell-prot-valor-base" readonly />
+                </div>
+                <div>
+                    <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Desconto (R$)</label>
+                    <input class="w-full" id="sell-prot-desconto" type="number" min="0" step="0.01" value="0" />
+                </div>
+            </div>
+
+            <div>
+                <label class="font-heading text-sm font-bold text-gray-700 block mb-2">Observação</label>
+                <textarea class="w-full" id="sell-prot-obs" rows="3" placeholder="Ex: clube de serviços, desconto especial, observações..."></textarea>
+            </div>
+
+            <div class="bg-[#FCF7F9] p-4 rounded-2xl border border-[#CBE5F7]">
+                <div class="flex items-center justify-between">
+                    <span class="font-heading text-sm font-bold text-[#6F4B36]">Valor final</span>
+                    <span class="font-heading text-xl font-bold text-[#6F4B36]" id="sell-prot-total">R$ 0,00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-8">
+            <button class="btn-secondary" onclick="closeModal('modal-venda-protocolo')" type="button">Cancelar</button>
+            <button class="btn-primary" type="submit">Confirmar Venda</button>
+        </div>
+    </form>
+</div>
+
+
+<div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-recompensa-admin" style="background-color: rgba(111,75,54,0.2);">
+    <form class="bg-white p-8 rounded-3xl shadow-2xl w-[640px] max-w-[95vw] modal-content" id="form-recompensa-admin">
+        <div class="flex justify-between items-start gap-4 mb-6 border-b border-[#CBE5F7] pb-4">
+            <div>
+                <h3 class="font-heading text-2xl font-bold text-[#6F4B36]" id="modal-recompensa-admin-title">Nova Recompensa</h3>
+                <p class="font-body text-sm text-gray-500">Defina os prêmios disponíveis no Clube Premium.</p>
+            </div>
+            <button class="text-gray-400 hover:text-[#6F4B36] transition-colors" type="button" onclick="closeModal('modal-recompensa-admin')">
+                <i class="fa-solid fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <input type="hidden" id="reward-admin-id" />
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="md:col-span-2">
+                <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Nome</label>
+                <input id="reward-admin-nome" type="text" placeholder="Ex.: R$ 50 de desconto" required />
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Descrição</label>
+                <textarea id="reward-admin-descricao" rows="3" placeholder="Descreva o prêmio"></textarea>
+            </div>
+
+            <div>
+                <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Pontos</label>
+                <input id="reward-admin-pontos" type="number" min="1" step="1" placeholder="500" required />
+            </div>
+
+            <div>
+                <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Tipo</label>
+                <select id="reward-admin-tipo" required>
+                    <option value="desconto">Desconto</option>
+                    <option value="servico">Serviço</option>
+                    <option value="produto">Produto</option>
+                    <option value="beneficio">Benefício</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Estoque</label>
+                <input id="reward-admin-estoque" type="number" min="0" step="1" placeholder="Deixe vazio para ilimitado" />
+            </div>
+
+            <div>
+                <label class="font-heading text-xs font-bold text-gray-600 block mb-2">Status</label>
+                <select id="reward-admin-ativo">
+                    <option value="1">Ativa</option>
+                    <option value="0">Inativa</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-8">
+            <button class="btn-secondary" type="button" onclick="closeModal('modal-recompensa-admin')">Cancelar</button>
+            <button class="btn-primary" type="submit">Salvar Recompensa</button>
+        </div>
+    </form>
+</div>
+
+</body>
+
+</html>
