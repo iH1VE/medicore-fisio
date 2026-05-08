@@ -499,6 +499,10 @@ window.login = async function () {
                 : data.user.tipo === "SECRETARIA"
                     ? "Secretaria"
                     : "Funcionário";
+        const _hNome = document.getElementById("header-user-nome");
+        const _hTipo = document.getElementById("header-user-tipo");
+        if (_hNome) _hNome.textContent = data.user.nome;
+        if (_hTipo) _hTipo.textContent = data.user.tipo === "ADMIN" ? "Administrador" : data.user.tipo === "SECRETARIA" ? "Secretaria" : "Funcionário";
 
         if (data.user.tipo === "SECRETARIA") {
             document.querySelectorAll('.nav-link').forEach(nav => {
@@ -646,7 +650,11 @@ function updateDashboard() {
             .sort((a,b)=>new Date(b.data)-new Date(a.data))[0];
         const daysInactive = lastVisit ? Math.floor((new Date() - new Date(lastVisit.data)) / (1000*60*60*24)) : 'N/A';
         
-        return `<tr class="hover:bg-[#FCF7F9] transition-colors">
+        const lastAtend = DB.atendimentos.filter(a => a.pacienteId === p.id)
+            .sort((a,b)=>new Date(b.data)-new Date(a.data))[0];
+        const ultimoServico = lastAtend?.servico || lastAtend?.procedimento || '—';
+        const potencial = p.protocolo || p.plano || '—';
+        return `<tr class="hover:bg-[#f0fdfb] transition-colors">
             <td class="p-3 font-medium text-gray-800">
                 <div class="flex items-center gap-2">
                     <span>${p.nome}</span>
@@ -655,12 +663,12 @@ function updateDashboard() {
                         : ''}
                 </div>
             </td>
-            <td class="p-3 text-gray-600">${p.tel || '—'}</td>
             <td class="p-3 text-gray-600">${lastVisit ? formatDate(lastVisit.data) : 'Nunca'}</td>
-            <td class="p-3 text-center"><span class="badge badge-secondary">${daysInactive} dias</span></td>
+            <td class="p-3 text-gray-500 text-xs">${ultimoServico}</td>
+            <td class="p-3 text-center text-gray-500 text-xs">${potencial}</td>
             <td class="p-3 text-center">
-                <button onclick="openModal('modal-agendamento', '${today}')" class="btn-primary text-xs !py-1.5 !px-3">
-                    <i class="fa-solid fa-calendar-plus mr-1"></i>Agendar
+                <button onclick="window.open('https://wa.me/55' + (p.tel||'').replace(/\\D/g,''),'_blank')" class="text-xs py-1.5 px-3 rounded-lg font-semibold transition-all" style="background:#00d4b8;color:#fff;border:none;cursor:pointer;" onmouseover="this.style.background='#009e8a'" onmouseout="this.style.background='#00d4b8'">
+                    <i class="fa-brands fa-whatsapp mr-1"></i>Contatar
                 </button>
             </td>
         </tr>`;
@@ -2885,6 +2893,11 @@ window.onload = async function() {
                             ? "Secretaria"
                             : "Funcionário";
             }
+
+            const _hNomeR = document.getElementById("header-user-nome");
+            const _hTipoR = document.getElementById("header-user-tipo");
+            if (_hNomeR) _hNomeR.textContent = user.nome;
+            if (_hTipoR) _hTipoR.textContent = user.tipo === "ADMIN" ? "Administrador" : user.tipo === "SECRETARIA" ? "Secretaria" : "Funcionário";
 
             if (typeof showSection === "function") {
                 if (user.tipo === "SECRETARIA") {
