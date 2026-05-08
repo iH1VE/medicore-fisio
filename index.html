@@ -117,7 +117,7 @@
     .calendar-day-num {
         flex-shrink: 0;
         font-weight: 700;
-        color: #6F4B36;
+        color: #1a2647;
         margin-bottom: 6px;
     }
 
@@ -166,7 +166,7 @@
 
     .calendar-more {
         font-size: 11px;
-        color: #6F4B36;
+        color: #00d4b8;
         font-weight: 600;
         padding-left: 4px;
     }
@@ -269,14 +269,11 @@
 <div class="app-shell">
     <aside class="sidebar no-print">
         <div class="sidebar-brand">
-            <div class="brand-logo-wrap">
-                <img src="logo.png" alt="Logo da clínica" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
-                <div class="brand-logo-fallback">
-                    <i class="fa-solid fa-heart-pulse"></i>
-                </div>
+            <div class="brand-logo-wrap" style="background:rgba(0,212,184,0.15);border:1px solid rgba(0,212,184,0.3);">
+                <span style="font-size:1.5rem;font-weight:900;color:#00d4b8;font-family:'Poppins',sans-serif;letter-spacing:-1px;">F</span>
             </div>
             <div class="brand-text">
-                <h1 class="font-heading">MediCore AI</h1>
+                <h1 class="font-heading" style="color:#ffffff;font-size:1.1rem;letter-spacing:0.5px;">Fisio</h1>
                 <div class="badge badge-secondary text-xs" id="user-role-badge">Aguardando login...</div>
             </div>
         </div>
@@ -299,17 +296,14 @@
 
         <div class="sidebar-footer">
             <div class="sidebar-user-card">
-                <div class="flex items-center justify-between gap-3">
-                    <span class="font-body text-sm text-gray-600" id="header-username">
-                        <i class="fa-regular fa-user mr-2"></i>Usuário
-                    </span>
-                    <div class="hidden bg-[#00d4b8] text-[#1a2647] rounded-full w-7 h-7 flex items-center justify-center text-xs font-bold cursor-pointer" id="alert-badge" onclick="showSection('dashboard');" title="Alertas de Estoque">
-                        <span>0</span>
-                    </div>
-                </div>
                 <button class="btn-secondary sidebar-logout" onclick="logout()">
                     <i class="fa-solid fa-power-off mr-2"></i>Sair
                 </button>
+                <div class="hidden" id="alert-badge" onclick="showSection('dashboard');" title="Alertas de Estoque">
+                    <span>0</span>
+                </div>
+                <!-- header-username mantido mas oculto (compatibilidade JS) -->
+                <span class="hidden" id="header-username"></span>
             </div>
         </div>
     </aside>
@@ -1081,19 +1075,19 @@
 
                 <div class="patient-flags-grid mt-4 text-sm text-gray-700">
                     <label class="flex items-center gap-2">
-                        <input id="pac-flag-alergia" type="checkbox" class="accent-[#6F4B36]">
+                        <input id="pac-flag-alergia" type="checkbox" class="accent-[#00d4b8]">
                         <span>Possui alergia</span>
                     </label>
                     <label class="flex items-center gap-2">
-                        <input id="pac-flag-atencao" type="checkbox" class="accent-[#6F4B36]">
+                        <input id="pac-flag-atencao" type="checkbox" class="accent-[#00d4b8]">
                         <span>Requer atenção especial</span>
                     </label>
                     <label class="flex items-center gap-2">
-                        <input id="pac-flag-restricao" type="checkbox" class="accent-[#6F4B36]">
+                        <input id="pac-flag-restricao" type="checkbox" class="accent-[#00d4b8]">
                         <span>Restrição medicamentosa</span>
                     </label>
                     <label class="flex items-center gap-2">
-                        <input id="pac-flag-ansioso" type="checkbox" class="accent-[#6F4B36]">
+                        <input id="pac-flag-ansioso" type="checkbox" class="accent-[#00d4b8]">
                         <span>Sensível/ansioso em procedimento</span>
                     </label>
                 </div>
@@ -1116,7 +1110,7 @@
             
             <div class="bg-[#FCF7F9] p-4 rounded-2xl border border-[#CBE5F7]">
                 <label class="flex items-center gap-3">
-                    <input class="w-5 h-5 accent-[#6F4B36]" id="pac-lgpd" type="checkbox"/>
+                    <input class="w-5 h-5 accent-[#00d4b8]" id="pac-lgpd" type="checkbox"/>
                     <span class="font-body text-sm text-gray-700">Declaro que o paciente está ciente e concorda com a LGPD</span>
                 </label>
             </div>

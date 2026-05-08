@@ -434,7 +434,7 @@ function showToast(msg, type='success') {
     
     const icon = type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check';
     t.innerHTML = `<i class="fa-solid ${icon} mr-2"></i><span>${msg}</span>`;
-    t.className = `fixed bottom-6 right-6 text-white px-6 py-4 rounded-2xl shadow-xl z-50 toast-animate ${type==='error' ? 'bg-red-600' : 'bg-[#6F4B36]'}`; 
+    t.className = `fixed bottom-6 right-6 text-white px-6 py-4 rounded-xl shadow-xl z-50 toast-animate ${type==='error' ? 'bg-red-600' : 'bg-[#1a2647]'}`; 
     t.classList.remove('hidden'); 
     setTimeout(() => t.classList.add('hidden'), 3000); 
 }
@@ -701,20 +701,20 @@ function renderPacientes() {
     document.getElementById('table-pacientes-body').innerHTML = DB.pacientes
         .filter(p => (p.nome||'').toLowerCase().includes(s) || (p.cpf||'').includes(s))
         .map(p => `
-        <tr class="hover:bg-[#FCF7F9] transition-colors">
+        <tr class="hover:bg-[#f0fdfb] transition-colors">
             <td class="p-3 font-medium text-gray-800">${p.nome}</td>
             <td class="p-3 text-gray-600">${p.cpf}</td>
             <td class="p-3 text-gray-600">${p.dataNascimento ? formatDate(p.dataNascimento) : '—'}</td>
             <td class="p-3"><span class="badge ${p.tipoAtendimento === 'Particular' ? 'badge-primary' : 'badge-secondary'}">${p.tipoAtendimento}</span></td>
             <td class="p-3 text-center text-gray-600">${p.dataCadastro ? formatDate(p.dataCadastro.split('T')[0]) : '—'}</td>
             <td class="p-3 text-center">
-                <button onclick="editPatient('${p.id}')" class="text-[#6F4B36] hover:text-[#5A3C2B] transition-colors mx-1" title="Editar">
+                <button onclick="editPatient('${p.id}')" class="text-[#00d4b8] hover:text-[#009e8a] transition-colors mx-1" title="Editar">
                     <i class="fa-solid fa-pen"></i>
                 </button>
-                <button onclick="openPatientReport('${p.id}')" class="text-[#6F4B36] hover:text-[#5A3C2B] transition-colors mx-1" title="Prontuário">
+                <button onclick="openPatientReport('${p.id}')" class="text-[#00d4b8] hover:text-[#009e8a] transition-colors mx-1" title="Prontuário">
                     <i class="fa-solid fa-file-medical"></i>
                 </button>
-                <button onclick="renderPatientQuickReport('${p.id}')" class="text-[#6F4B36] hover:text-[#5A3C2B] transition-colors mx-1" title="Resumo Rápido">
+                <button onclick="renderPatientQuickReport('${p.id}')" class="text-[#00d4b8] hover:text-[#009e8a] transition-colors mx-1" title="Resumo Rápido">
                     <i class="fa-solid fa-circle-info"></i>
                 </button>
                 ${currentUserRole === 'ADMIN' ? `
@@ -759,12 +759,12 @@ function renderCalendar() {
         const hiddenCount = Math.max(0, events.length - visibleEvents.length);
 
         let html = visibleEvents.map(ev => {
-            let cls = 'bg-[#FCF7F9] text-[#6F4B36] border border-[#CBE5F7]';
-            let dot = '#6F4B36';
+            let cls = 'bg-[#e0f7f4] text-[#009e8a] border border-[#00d4b8] border-opacity-30';
+            let dot = '#00d4b8';
 
             if (ev.status === 'Em Atendimento') {
-                cls = 'bg-[#CBE5F7] text-[#2D3E50]';
-                dot = '#2D3E50';
+                cls = 'bg-[#1a2647] text-white';
+                dot = '#ffffff';
             } else if (ev.status === 'Confirmado') {
                 cls = 'bg-green-100 text-green-800 border border-green-300';
                 dot = '#16a34a';
@@ -801,10 +801,10 @@ function renderCalendar() {
     document.getElementById('fila-espera-list').innerHTML = waiting.length > 0 
         ? waiting.map(ag => `
             <div onclick="showSection('atendimento'); startConsultation('${ag.id}')" 
-                 class="bg-white border-2 border-[#CBE5F7] hover:border-[#6F4B36] p-4 rounded-2xl shadow-sm cursor-pointer min-w-[220px] transition-all hover:shadow-md">
+                 class="bg-white border-2 border-[#e0f7f4] hover:border-[#00d4b8] p-4 rounded-2xl shadow-sm cursor-pointer min-w-[220px] transition-all hover:shadow-md">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 bg-[#FCF7F9] rounded-full flex items-center justify-center">
-                        <i class="fa-solid fa-user-clock text-[#6F4B36]"></i>
+                        <i class="fa-solid fa-user-clock text-[#00d4b8]"></i>
                     </div>
                     <div>
                         <div class="font-bold text-gray-800">${ag.pacienteNome}</div>
@@ -2505,7 +2505,7 @@ function renderAnalytics() {
                 {
                     label: 'Receitas',
                     data: receitas,
-                    backgroundColor: 'rgba(111, 75, 54, 0.75)',
+                    backgroundColor: 'rgba(0, 212, 184, 0.85)',
                     borderRadius: 10,
                     borderSkipped: false
                 },
@@ -2542,8 +2542,8 @@ function renderAnalytics() {
             datasets: [{
                 label: 'Novos pacientes',
                 data: novosPacientes,
-                borderColor: '#6F4B36',
-                backgroundColor: 'rgba(203, 229, 247, 0.35)',
+                borderColor: '#00d4b8',
+                backgroundColor: 'rgba(0, 212, 184, 0.12)',
                 tension: 0.35,
                 fill: true,
                 pointRadius: 4,
