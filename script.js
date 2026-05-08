@@ -2454,9 +2454,9 @@ function renderStrategyTable() {
         const ticketMedio = novosPacientes > 0 ? receitas / novosPacientes : 0;
 
         return `
-            <tr class="hover:bg-[#FCF7F9]">
+            <tr class="hover:bg-[#f0fdfb]">
                 <td class="p-3 font-bold text-gray-800">${year}</td>
-                <td class="p-3 text-right font-mono text-[#6F4B36]">${formatCurrency(receitas)}</td>
+                <td class="p-3 text-right font-mono text-[#00d4b8] font-bold">${formatCurrency(receitas)}</td>
                 <td class="p-3 text-right font-mono text-red-600">${formatCurrency(custos)}</td>
                 <td class="p-3 text-right font-mono font-bold ${margem >= 0 ? 'text-green-600' : 'text-red-600'}">${formatCurrency(margem)}</td>
                 <td class="p-3 text-center">${novosPacientes}</td>
@@ -2503,16 +2503,16 @@ function renderAnalytics() {
             labels,
             datasets: [
                 {
-                    label: 'Receitas',
+                    label: 'Receita',
                     data: receitas,
                     backgroundColor: 'rgba(0, 212, 184, 0.85)',
                     borderRadius: 10,
                     borderSkipped: false
                 },
                 {
-                    label: 'Despesas',
+                    label: 'Despesa',
                     data: despesas,
-                    backgroundColor: 'rgba(203, 229, 247, 0.95)',
+                    backgroundColor: 'rgba(26, 38, 71, 0.85)',
                     borderRadius: 10,
                     borderSkipped: false
                 }
@@ -2542,6 +2542,7 @@ function renderAnalytics() {
             datasets: [{
                 label: 'Novos pacientes',
                 data: novosPacientes,
+                label: 'Pacientes',
                 borderColor: '#00d4b8',
                 backgroundColor: 'rgba(0, 212, 184, 0.12)',
                 tension: 0.35,

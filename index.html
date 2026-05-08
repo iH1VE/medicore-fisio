@@ -482,13 +482,13 @@
     <section class="hidden gap-section" id="estrategia">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <div class="card p-6">
-                <h3 class="font-heading font-bold text-lg text-[#00d4b8] mb-4">Balancete Anual</h3>
+                <h3 class="font-heading font-bold text-lg text-[#00d4b8] mb-4"><i class="fa-solid fa-arrow-trend-up mr-2"></i>Receitas vs Despesas</h3>
                 <div class="h-64 relative">
                     <canvas id="chart-financeiro-anual"></canvas>
                 </div>
             </div>
             <div class="card p-6">
-                <h3 class="font-heading font-bold text-lg text-[#00d4b8] mb-4">Crescimento de Pacientes</h3>
+                <h3 class="font-heading font-bold text-lg text-[#00d4b8] mb-4"><i class="fa-solid fa-arrow-trend-up mr-2"></i>Crescimento de Pacientes</h3>
                 <div class="h-64 relative">
                     <canvas id="chart-pacientes-anual"></canvas>
                 </div>
@@ -497,8 +497,11 @@
         
         <div class="card p-6">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="font-heading font-bold text-lg text-[#00d4b8]">DRE Simplificado</h3>
-                <button class="btn-secondary" onclick="window.print()">
+                <div>
+                    <h3 class="font-heading font-bold text-lg text-[#00d4b8]">DRE - Demonstração do Resultado</h3>
+                    <p class="text-sm text-gray-500 mt-0.5">Análise financeira do período atual</p>
+                </div>
+                <button class="btn-primary" onclick="window.print()">
                     <i class="fa-solid fa-print mr-2"></i>Imprimir
                 </button>
             </div>
