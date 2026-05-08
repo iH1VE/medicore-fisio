@@ -246,10 +246,10 @@
 <!-- LOGIN MODAL -->
 <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm" id="modal-login" style="background-color: rgba(111,75,54,0.2);">
     <div class="bg-white p-8 rounded-3xl shadow-2xl w-96 text-center" style="border: 1px solid rgba(203,229,247,0.3);">
-        <div class="w-20 h-20 bg-[#6F4B36] rounded-2xl mx-auto mb-4 flex items-center justify-center">
+        <div class="w-20 h-20 bg-[#00d4b8] rounded-2xl mx-auto mb-4 flex items-center justify-center">
             <i class="fa-solid fa-stethoscope text-4xl text-white"></i>
         </div>
-        <h2 class="font-heading text-3xl font-bold text-[#6F4B36] mb-2">MediCore</h2>
+        <h2 class="font-heading text-3xl font-bold text-[#00d4b8] mb-2">MediCore</h2>
         <p class="text-sm text-gray-500 mb-6 font-body">Sistema Integrado de Gestão Clínica</p>
 <div class="login-form-fields">
     <input type="email" id="login-email" placeholder="Email" class="login-input">
@@ -260,7 +260,7 @@
 </div>
 
 <!-- TOAST NOTIFICATION -->
-<div class="hidden fixed bottom-6 right-6 bg-[#6F4B36] text-white px-6 py-4 rounded-2xl shadow-xl z-50 toast-animate" id="toast-notification" style="border: 1px solid rgba(255,255,255,0.1);">
+<div class="hidden fixed bottom-6 right-6 bg-[#1a2647] text-white px-6 py-4 rounded-xl shadow-xl z-50 toast-animate" id="toast-notification" style="border: 1px solid rgba(255,255,255,0.1);">
     <i class="fa-solid fa-circle-check mr-2"></i>
     <span>Sucesso</span>
 </div>
@@ -303,7 +303,7 @@
                     <span class="font-body text-sm text-gray-600" id="header-username">
                         <i class="fa-regular fa-user mr-2"></i>Usuário
                     </span>
-                    <div class="hidden bg-[#6F4B36] text-white rounded-full w-7 h-7 flex items-center justify-center text-xs font-bold cursor-pointer" id="alert-badge" onclick="showSection('dashboard');" title="Alertas de Estoque">
+                    <div class="hidden bg-[#00d4b8] text-[#1a2647] rounded-full w-7 h-7 flex items-center justify-center text-xs font-bold cursor-pointer" id="alert-badge" onclick="showSection('dashboard');" title="Alertas de Estoque">
                         <span>0</span>
                     </div>
                 </div>
@@ -315,10 +315,19 @@
     </aside>
 
     <div class="app-content">
-        <header class="content-header">
+        <header class="content-header" style="display:flex;justify-content:space-between;align-items:center;">
             <div>
                 <p class="content-eyebrow">Sistema Integrado de Gestão Clínica</p>
                 <h2 class="section-title mb-0" id="page-title">Visão Geral</h2>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="text-align:right;">
+                    <div style="font-size:14px;font-weight:600;color:#1a2647;" id="header-user-nome">Dr. Admin</div>
+                    <div style="font-size:12px;color:#64748b;" id="header-user-tipo">Administrador</div>
+                </div>
+                <div style="width:40px;height:40px;border-radius:50%;background:#1a2647;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fa-solid fa-user" style="color:white;font-size:15px;"></i>
+                </div>
             </div>
         </header>
 
@@ -329,21 +338,21 @@
         <!-- Alertas de Estoque -->
         <div class="hidden alert-box mb-8" id="dashboard-alerts">
             <div class="flex items-center gap-3 mb-3">
-                <div class="w-8 h-8 bg-[#6F4B36] rounded-full flex items-center justify-center">
+                <div class="w-8 h-8 bg-[#00d4b8] rounded-full flex items-center justify-center">
                     <i class="fa-solid fa-circle-exclamation text-white text-sm"></i>
                 </div>
-                <h3 class="font-heading font-bold text-[#6F4B36]">Alertas de Estoque</h3>
+                <h3 class="font-heading font-bold text-[#00d4b8]">Alertas de Estoque</h3>
             </div>
             <div class="space-y-2 text-sm text-gray-700" id="alerts-list"></div>
         </div>
 
         <!-- KPI Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="kpi-card">
                 <div class="flex justify-between items-start mb-2">
                     <div class="kpi-label">Total Pacientes</div>
-                    <div class="w-10 h-10 bg-[#CBE5F7] rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-users text-[#6F4B36] text-lg"></i>
+                    <div class="w-10 h-10 bg-[#1a2647] rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-users text-[#00d4b8] text-lg"></i>
                     </div>
                 </div>
                 <div class="kpi-value" id="kpi-total-patients">0</div>
@@ -351,8 +360,8 @@
             <div class="kpi-card">
                 <div class="flex justify-between items-start mb-2">
                     <div class="kpi-label">Agendamentos Hoje</div>
-                    <div class="w-10 h-10 bg-[#CBE5F7] rounded-xl flex items-center justify-center">
-                        <i class="fa-regular fa-calendar-check text-[#6F4B36] text-lg"></i>
+                    <div class="w-10 h-10 bg-[#1a2647] rounded-xl flex items-center justify-center">
+                        <i class="fa-regular fa-calendar-check text-[#00d4b8] text-lg"></i>
                     </div>
                 </div>
                 <div class="kpi-value" id="kpi-today-appts">0</div>
@@ -360,11 +369,20 @@
             <div class="kpi-card">
                 <div class="flex justify-between items-start mb-2">
                     <div class="kpi-label">Faturamento Total</div>
-                    <div class="w-10 h-10 bg-[#CBE5F7] rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-chart-pie text-[#6F4B36] text-lg"></i>
+                    <div class="w-10 h-10 bg-[#1a2647] rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-chart-pie text-[#00d4b8] text-lg"></i>
                     </div>
                 </div>
                 <div class="kpi-value" id="kpi-sales">R$ 0,00</div>
+            </div>
+            <div class="kpi-card">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="kpi-label">Alertas</div>
+                    <div class="w-10 h-10 bg-[#1a2647] rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-triangle-exclamation text-[#00d4b8] text-lg"></i>
+                    </div>
+                </div>
+                <div class="kpi-value" id="kpi-alerts">0</div>
             </div>
         </div>
 
@@ -372,7 +390,7 @@
         <div class="card p-6">
             <div class="flex justify-between items-center mb-6">
                 <div>
-                    <h3 class="font-heading font-bold text-lg text-[#6F4B36] flex items-center gap-2">
+                    <h3 class="font-heading font-bold text-lg text-[#00d4b8] flex items-center gap-2">
                         <i class="fa-solid fa-clock-rotate-left"></i>
                         Oportunidades de Retorno
                     </h3>
@@ -401,7 +419,7 @@
     <section class="hidden gap-section" id="protocolos">
         <div class="flex justify-between items-center mb-6">
             <div>
-                <h3 class="font-heading font-bold text-lg text-[#6F4B36]">Gestão de Protocolos</h3>
+                <h3 class="font-heading font-bold text-lg text-[#00d4b8]">Gestão de Protocolos</h3>
                 <p class="font-body text-sm text-gray-500">Defina os pacotes de serviços</p>
             </div>
             <button class="btn-primary" onclick="openModal('modal-novo-protocolo')">
@@ -428,7 +446,7 @@
     <section class="hidden gap-section" id="agenda">
         <div class="flex justify-between items-center mb-6">
             <div class="flex items-center gap-4">
-                <h3 class="font-heading font-bold text-xl text-[#6F4B36]" id="calendar-month-year"></h3>
+                <h3 class="font-heading font-bold text-xl text-[#00d4b8]" id="calendar-month-year"></h3>
                 <div class="flex gap-2">
                     <button class="btn-secondary !px-3 !py-2" onclick="changeMonth(-1)">
                         <i class="fa-solid fa-chevron-left"></i>
@@ -458,7 +476,7 @@
         </div>
 
         <div class="card p-6">
-            <h3 class="font-heading font-bold text-lg text-[#6F4B36] mb-4 flex items-center gap-2">
+            <h3 class="font-heading font-bold text-lg text-[#00d4b8] mb-4 flex items-center gap-2">
                 <i class="fa-solid fa-user-clock"></i>
                 Fila de Espera / Check-in
             </h3>
@@ -470,13 +488,13 @@
     <section class="hidden gap-section" id="estrategia">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <div class="card p-6">
-                <h3 class="font-heading font-bold text-lg text-[#6F4B36] mb-4">Balancete Anual</h3>
+                <h3 class="font-heading font-bold text-lg text-[#00d4b8] mb-4">Balancete Anual</h3>
                 <div class="h-64 relative">
                     <canvas id="chart-financeiro-anual"></canvas>
                 </div>
             </div>
             <div class="card p-6">
-                <h3 class="font-heading font-bold text-lg text-[#6F4B36] mb-4">Crescimento de Pacientes</h3>
+                <h3 class="font-heading font-bold text-lg text-[#00d4b8] mb-4">Crescimento de Pacientes</h3>
                 <div class="h-64 relative">
                     <canvas id="chart-pacientes-anual"></canvas>
                 </div>
@@ -485,7 +503,7 @@
         
         <div class="card p-6">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="font-heading font-bold text-lg text-[#6F4B36]">DRE Simplificado</h3>
+                <h3 class="font-heading font-bold text-lg text-[#00d4b8]">DRE Simplificado</h3>
                 <button class="btn-secondary" onclick="window.print()">
                     <i class="fa-solid fa-print mr-2"></i>Imprimir
                 </button>
@@ -494,7 +512,7 @@
                 <thead>
                     <tr>
                         <th class="text-left">Ano</th>
-                        <th class="text-right text-[#6F4B36]">Receita</th>
+                        <th class="text-right text-[#00d4b8]">Receita</th>
                         <th class="text-right text-gray-600">Custos</th>
                         <th class="text-right text-green-600">Margem</th>
                         <th class="text-center">Novos Pacientes</th>
@@ -511,7 +529,7 @@
         <div class="flex gap-4 mb-6 no-print">
             <div class="relative flex-1">
                 <i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                <input class="w-full pl-10 pr-4 py-3 rounded-2xl border border-[#CBE5F7] focus:border-[#6F4B36] focus:ring-2 focus:ring-[#6F4B36] focus:ring-opacity-20" 
+                <input class="w-full pl-10 pr-4 py-3 rounded-2xl border border-[#CBE5F7] focus:border-[#00d4b8] focus:ring-2 focus:ring-[#00d4b8] focus:ring-opacity-20" 
                        id="search-paciente" 
                        oninput="renderPacientes()" 
                        placeholder="Pesquisar pacientes..."/>
@@ -543,7 +561,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-1">
                 <div class="card p-6">
-                    <h3 class="font-heading font-bold text-lg text-[#6F4B36] mb-4 flex items-center gap-2">
+                    <h3 class="font-heading font-bold text-lg text-[#00d4b8] mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-users-between-lines"></i>
                         Fila de Atendimento
                     </h3>
@@ -556,7 +574,7 @@
                     <!-- Estado Vazio -->
                     <div class="h-64 flex flex-col items-center justify-center text-gray-400" id="area-clinica-empty">
                         <div class="w-20 h-20 bg-[#FCF7F9] rounded-full flex items-center justify-center mb-4">
-                            <i class="fa-solid fa-user-doctor text-3xl text-[#6F4B36] opacity-30"></i>
+                            <i class="fa-solid fa-user-doctor text-3xl text-[#00d4b8] opacity-30"></i>
                         </div>
                         <p class="font-body text-gray-500">Selecione um paciente para iniciar o atendimento</p>
                     </div>
@@ -566,7 +584,7 @@
                         <!-- Header do Paciente -->
                         <div class="flex justify-between items-start border-b border-[#CBE5F7] pb-6 mb-6">
                             <div>
-                                <h4 class="font-heading text-2xl font-bold text-[#6F4B36]" id="current-patient-name"></h4>
+                                <h4 class="font-heading text-2xl font-bold text-[#00d4b8]" id="current-patient-name"></h4>
                                 <div class="flex items-center gap-3 mt-2">
                                     <span class="font-body text-sm text-gray-500">
                                         <i class="fa-regular fa-id-card mr-1"></i>
@@ -577,7 +595,7 @@
                             </div>
                             <div class="text-right">
                                 <div class="badge badge-primary mb-2" id="atendimento-tipo"></div>
-                                <div class="font-heading font-bold text-xl text-[#6F4B36]">
+                                <div class="font-heading font-bold text-xl text-[#00d4b8]">
                                     <span id="atendimento-valor">R$ 0,00</span>
                                 </div>
                             </div>
@@ -596,7 +614,7 @@
                         <!-- Anamnese -->
                         <div class="mb-8 bg-[#FCF7F9] rounded-2xl p-5 border border-[#CBE5F7] border-opacity-30">
                             <div class="flex justify-between items-center mb-3">
-                                <h5 class="font-heading font-bold text-[#6F4B36] flex items-center gap-2">
+                                <h5 class="font-heading font-bold text-[#00d4b8] flex items-center gap-2">
                                     <i class="fa-solid fa-clipboard-user"></i>
                                     Anamnese
                                 </h5>
@@ -611,7 +629,7 @@
 
                         <!-- Histórico Recente -->
                         <div class="mb-8">
-                            <h5 class="font-heading font-bold text-[#6F4B36] mb-3 flex items-center gap-2">
+                            <h5 class="font-heading font-bold text-[#00d4b8] mb-3 flex items-center gap-2">
                                 <i class="fa-solid fa-clock-rotate-left"></i>
                                 Histórico Recente
                             </h5>
@@ -620,7 +638,7 @@
 
                         <!-- Prescrição -->
                         <div class="mb-8">
-                            <h5 class="font-heading font-bold text-[#6F4B36] mb-3 flex items-center gap-2">
+                            <h5 class="font-heading font-bold text-[#00d4b8] mb-3 flex items-center gap-2">
                                 <i class="fa-solid fa-prescription"></i>
                                 Prescrição
                             </h5>
@@ -638,7 +656,7 @@
 
                         <!-- Exames -->
                         <div class="mb-8">
-                            <h5 class="font-heading font-bold text-[#6F4B36] mb-3 flex items-center gap-2">
+                            <h5 class="font-heading font-bold text-[#00d4b8] mb-3 flex items-center gap-2">
                                 <i class="fa-solid fa-flask"></i>
                                 Exames
                             </h5>
@@ -665,8 +683,8 @@
                                     <span class="font-mono font-bold" id="total-exams">R$ 0,00</span>
                                 </div>
                                 <div class="flex justify-between font-heading font-bold text-lg pt-3 mt-2 border-t border-[#CBE5F7]">
-                                    <span class="text-[#6F4B36]">Total:</span>
-                                    <span class="text-[#6F4B36]" id="total-final">R$ 0,00</span>
+                                    <span class="text-[#00d4b8]">Total:</span>
+                                    <span class="text-[#00d4b8]" id="total-final">R$ 0,00</span>
                                 </div>
                             </div>
                             <button class="btn-primary w-full" id="btn-finalizar-pagar" onclick="proceedToPayment()">
@@ -684,7 +702,7 @@
         <div class="flex gap-4 mb-6 no-print">
             <div class="relative flex-1">
                 <i class="fa-solid fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                <input class="w-full pl-10 pr-4 py-3 rounded-2xl border border-[#CBE5F7] focus:border-[#6F4B36] focus:ring-2 focus:ring-[#6F4B36] focus:ring-opacity-20" 
+                <input class="w-full pl-10 pr-4 py-3 rounded-2xl border border-[#CBE5F7] focus:border-[#00d4b8] focus:ring-2 focus:ring-[#00d4b8] focus:ring-opacity-20" 
                        id="search-estoque" 
                        oninput="renderEstoque()" 
                        placeholder="Pesquisar no estoque..."/>
@@ -716,7 +734,7 @@
     <section class="hidden gap-section" id="financeiro">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 no-print">
             <div>
-                <h3 class="font-heading font-bold text-lg text-[#6F4B36]">Financeiro</h3>
+                <h3 class="font-heading font-bold text-lg text-[#00d4b8]">Financeiro</h3>
                 <p class="font-body text-sm text-gray-500">Controle receitas, despesas, pendências e exporte o relatório do período.</p>
             </div>
             <div class="flex flex-wrap gap-3">
@@ -735,7 +753,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6" id="financial-summary-cards">
             <div class="card p-5">
                 <div class="text-xs uppercase tracking-wide text-gray-500">Receitas</div>
-                <div id="financial-total-receitas" class="font-heading text-2xl font-bold text-[#6F4B36] mt-2">R$ 0,00</div>
+                <div id="financial-total-receitas" class="font-heading text-2xl font-bold text-[#00d4b8] mt-2">R$ 0,00</div>
             </div>
             <div class="card p-5">
                 <div class="text-xs uppercase tracking-wide text-gray-500">Despesas</div>
@@ -825,8 +843,8 @@
                 <tbody class="divide-y divide-[#CBE5F7] divide-opacity-30" id="table-financial-body"></tbody>
                 <tfoot>
                     <tr class="bg-[#FCF7F9]">
-                        <td colspan="6" class="text-right font-heading font-bold text-[#6F4B36]">Saldo do período:</td>
-                        <td class="text-right font-heading font-bold text-[#6F4B36]" id="financial-table-total-sum">R$ 0,00</td>
+                        <td colspan="6" class="text-right font-heading font-bold text-[#00d4b8]">Saldo do período:</td>
+                        <td class="text-right font-heading font-bold text-[#00d4b8]" id="financial-table-total-sum">R$ 0,00</td>
                         <td colspan="2"></td>
                     </tr>
                 </tfoot>
@@ -838,7 +856,7 @@
 <!-- CUPONS -->
 <section class="hidden gap-section" id="cupons">
     <div class="flex justify-between mb-6">
-        <h3 class="font-heading text-lg font-bold text-[#6F4B36]">Cupons</h3>
+        <h3 class="font-heading text-lg font-bold text-[#00d4b8]">Cupons</h3>
         <button class="btn-primary" onclick="openModal('modal-cupom')">
             Novo Cupom
         </button>
@@ -865,7 +883,7 @@
     <section class="hidden gap-section" id="recompensas-admin">
         <div class="flex justify-between items-center mb-6 no-print">
             <div>
-                <h3 class="font-heading font-bold text-lg text-[#6F4B36]">Recompensas do Clube</h3>
+                <h3 class="font-heading font-bold text-lg text-[#00d4b8]">Recompensas do Clube</h3>
                 <p class="font-body text-sm text-gray-500">Cadastre e gerencie os prêmios disponíveis no Clube Premium.</p>
             </div>
             <button class="btn-primary" onclick="openRewardAdminModal()">
@@ -895,7 +913,7 @@
     <section class="hidden gap-section" id="resgates-admin">
         <div class="flex justify-between items-center mb-6 no-print">
             <div>
-                <h3 class="font-heading font-bold text-lg text-[#6F4B36]">Resgates do Clube</h3>
+                <h3 class="font-heading font-bold text-lg text-[#00d4b8]">Resgates do Clube</h3>
                 <p class="font-body text-sm text-gray-500">Acompanhe e atualize o status operacional dos resgates.</p>
             </div>
         </div>
@@ -922,7 +940,7 @@
     <section class="hidden gap-section" id="relatorios">
         <div class="flex justify-between items-center mb-6 no-print">
             <div>
-                <h3 class="font-heading font-bold text-lg text-[#6F4B36]">Consolidado por Paciente</h3>
+                <h3 class="font-heading font-bold text-lg text-[#00d4b8]">Consolidado por Paciente</h3>
                 <p class="font-body text-sm text-gray-500">Histórico completo de atendimentos e valores</p>
             </div>
             <div class="flex gap-3">
@@ -975,7 +993,7 @@
 <!-- Modal Novo Protocolo -->
 <div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-novo-protocolo" style="background-color: rgba(111,75,54,0.2);">
     <form class="bg-white p-8 rounded-3xl shadow-2xl w-96 modal-content" id="form-novo-protocolo">
-        <h3 class="font-heading text-2xl font-bold text-[#6F4B36] mb-6">Novo Protocolo</h3>
+        <h3 class="font-heading text-2xl font-bold text-[#00d4b8] mb-6">Novo Protocolo</h3>
 
         <div class="space-y-4">
             <div>
@@ -994,7 +1012,7 @@
             </div>
 
             <div class="bg-[#FCF7F9] p-4 rounded-2xl border border-[#CBE5F7]">
-                <label class="font-heading text-sm font-bold text-[#6F4B36] block mb-3">Créditos do Protocolo:</label>
+                <label class="font-heading text-sm font-bold text-[#00d4b8] block mb-3">Créditos do Protocolo:</label>
 
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-sm text-gray-600">Consulta médica</span>
@@ -1028,7 +1046,7 @@
 <!-- Modal Paciente -->
 <div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-paciente" style="background-color: rgba(111,75,54,0.2);">
     <form class="bg-white p-8 rounded-3xl shadow-2xl w-96 max-h-[90vh] overflow-y-auto modal-content" id="form-paciente">
-        <h3 class="font-heading text-2xl font-bold text-[#6F4B36] mb-6" id="modal-paciente-title">Novo Paciente</h3>
+        <h3 class="font-heading text-2xl font-bold text-[#00d4b8] mb-6" id="modal-paciente-title">Novo Paciente</h3>
         <input id="pac-id" type="hidden"/>
         
         <div class="space-y-4">
@@ -1106,7 +1124,7 @@
         
         <div 
         <div id="patient-log-container" class="mt-6 border-t border-[#CBE5F7] pt-4">
-            <h4 class="font-heading text-lg font-bold text-[#6F4B36] mb-3">Histórico do Paciente</h4>
+            <h4 class="font-heading text-lg font-bold text-[#00d4b8] mb-3">Histórico do Paciente</h4>
             <div id="patient-log-list" class="space-y-2">
                 <div class="text-gray-400">Nenhum histórico</div>
             </div>
@@ -1126,7 +1144,7 @@
 <!-- Modal Agendamento -->
 <div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-agendamento" style="background-color: rgba(111,75,54,0.2);">
     <form class="bg-white p-8 rounded-3xl shadow-2xl w-96 max-h-[95vh] overflow-y-auto modal-content" id="form-agendamento">
-        <h3 class="font-heading text-2xl font-bold text-[#6F4B36] mb-6">Novo Agendamento</h3>
+        <h3 class="font-heading text-2xl font-bold text-[#00d4b8] mb-6">Novo Agendamento</h3>
         
         <div class="space-y-4">
             <div>
@@ -1134,7 +1152,7 @@
                 <select class="w-full" id="ag-paciente" onchange="checkPatientLastVisit()" required>
                     <option value="">Selecione um paciente...</option>
                 </select>
-                <div class="text-xs mt-2 hidden font-bold text-[#6F4B36]" id="ag-patient-alert"></div>
+                <div class="text-xs mt-2 hidden font-bold text-[#00d4b8]" id="ag-patient-alert"></div>
             </div>
             
             <div class="grid grid-cols-2 gap-4">
@@ -1164,11 +1182,11 @@
             </div>
             
             <div class="bg-[#FCF7F9] p-4 rounded-2xl border border-[#CBE5F7]">
-                <label class="font-heading text-sm font-bold text-[#6F4B36] block mb-2">Vínculo</label>
+                <label class="font-heading text-sm font-bold text-[#00d4b8] block mb-2">Vínculo</label>
                 <select class="w-full bg-white" id="ag-vinculo" onchange="toggleConsultValue()">
                     <option value="AVULSO">Avulso</option>
                 </select>
-                <div class="text-xs mt-2 hidden font-bold text-[#6F4B36]" id="ag-credit-info"></div>
+                <div class="text-xs mt-2 hidden font-bold text-[#00d4b8]" id="ag-credit-info"></div>
             </div>
             
             <div class="grid grid-cols-2 gap-4">
@@ -1211,7 +1229,7 @@
 <!-- Modal Estoque -->
 <div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-estoque" style="background-color: rgba(111,75,54,0.2);">
     <form class="bg-white p-8 rounded-3xl shadow-2xl w-96 modal-content" id="form-estoque">
-        <h3 class="font-heading text-2xl font-bold text-[#6F4B36] mb-6">Adicionar ao Estoque</h3>
+        <h3 class="font-heading text-2xl font-bold text-[#00d4b8] mb-6">Adicionar ao Estoque</h3>
         
         <div class="space-y-4">
             <div>
@@ -1267,15 +1285,15 @@
 <!-- Modal Pagamento -->
 <div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-pagamento" style="background-color: rgba(111,75,54,0.2);">
     <div class="bg-white p-8 rounded-3xl shadow-2xl w-96 text-center modal-content">
-        <div class="w-16 h-16 bg-[#6F4B36] rounded-2xl mx-auto mb-4 flex items-center justify-center">
+        <div class="w-16 h-16 bg-[#00d4b8] rounded-2xl mx-auto mb-4 flex items-center justify-center">
             <i class="fa-solid fa-credit-card text-2xl text-white"></i>
         </div>
         
-        <h3 class="font-heading text-2xl font-bold text-[#6F4B36] mb-6">Confirmar Pagamento</h3>
+        <h3 class="font-heading text-2xl font-bold text-[#00d4b8] mb-6">Confirmar Pagamento</h3>
         
         <div class="bg-[#FCF7F9] p-6 rounded-2xl mb-6 border border-[#CBE5F7]">
             <div class="font-body text-sm text-gray-500 mb-2">Valor Total</div>
-            <div class="font-heading text-4xl font-bold text-[#6F4B36]" id="pay-total-val">R$ 0,00</div>
+            <div class="font-heading text-4xl font-bold text-[#00d4b8]" id="pay-total-val">R$ 0,00</div>
             <div id="pay-redemption-info" class="hidden mt-3 text-sm text-green-700 bg-green-50 border border-green-200 rounded-xl px-3 py-2"></div>
         </div>
         
@@ -1313,8 +1331,8 @@
 <div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-questionnaire" style="background-color: rgba(111,75,54,0.2);">
     <form class="bg-white p-8 rounded-3xl shadow-2xl w-[600px] max-h-[90vh] flex flex-col modal-content" id="form-questionnaire">
         <div class="flex justify-between items-center mb-6">
-            <h3 class="font-heading text-2xl font-bold text-[#6F4B36]">Anamnese</h3>
-            <button class="text-gray-400 hover:text-[#6F4B36] transition-colors" onclick="closeModal('modal-questionnaire')" type="button">
+            <h3 class="font-heading text-2xl font-bold text-[#00d4b8]">Anamnese</h3>
+            <button class="text-gray-400 hover:text-[#00d4b8] transition-colors" onclick="closeModal('modal-questionnaire')" type="button">
                 <i class="fa-solid fa-times text-xl"></i>
             </button>
         </div>
@@ -1336,8 +1354,8 @@
 <div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-anamnese-history" style="background-color: rgba(111,75,54,0.2);">
     <div class="bg-white p-8 rounded-3xl shadow-2xl w-11/12 max-w-3xl max-h-[80vh] overflow-y-auto modal-content">
         <div class="flex justify-between items-center mb-6">
-            <h3 class="font-heading text-2xl font-bold text-[#6F4B36]">Histórico de Anamneses</h3>
-            <button class="text-gray-400 hover:text-[#6F4B36] transition-colors" onclick="closeModal('modal-anamnese-history')">
+            <h3 class="font-heading text-2xl font-bold text-[#00d4b8]">Histórico de Anamneses</h3>
+            <button class="text-gray-400 hover:text-[#00d4b8] transition-colors" onclick="closeModal('modal-anamnese-history')">
                 <i class="fa-solid fa-times text-xl"></i>
             </button>
         </div>
@@ -1345,7 +1363,7 @@
         <div class="space-y-3 text-sm mb-6" id="anamnese-history-list"></div>
         
         <div class="border-t border-[#CBE5F7] pt-6">
-            <div class="font-heading font-bold text-[#6F4B36] mb-3">Detalhes do Registro</div>
+            <div class="font-heading font-bold text-[#00d4b8] mb-3">Detalhes do Registro</div>
             <div class="text-sm bg-[#FCF7F9] p-4 rounded-xl" id="anamnese-detail"></div>
         </div>
     </div>
@@ -1356,10 +1374,10 @@
     <form class="bg-white p-8 rounded-3xl shadow-2xl w-11/12 max-w-3xl modal-content" id="form-financeiro">
         <div class="flex justify-between items-start gap-4 mb-6 border-b border-[#CBE5F7] pb-4">
             <div>
-                <h3 class="font-heading text-2xl font-bold text-[#6F4B36]" id="modal-financeiro-title">Novo Lançamento</h3>
+                <h3 class="font-heading text-2xl font-bold text-[#00d4b8]" id="modal-financeiro-title">Novo Lançamento</h3>
                 <p class="font-body text-sm text-gray-500">Cadastre receitas, despesas e pendências manuais.</p>
             </div>
-            <button class="text-gray-400 hover:text-[#6F4B36] transition-colors" type="button" onclick="closeModal('modal-financeiro')">
+            <button class="text-gray-400 hover:text-[#00d4b8] transition-colors" type="button" onclick="closeModal('modal-financeiro')">
                 <i class="fa-solid fa-times text-xl"></i>
             </button>
         </div>
@@ -1451,7 +1469,7 @@
     <div class="bg-white p-8 rounded-3xl shadow-2xl w-11/12 max-w-4xl h-[90vh] overflow-y-auto modal-content">
         <div class="flex justify-between items-start border-b border-[#CBE5F7] pb-6 mb-6">
             <div>
-                <h1 class="font-heading text-3xl font-bold text-[#6F4B36]">Prontuário</h1>
+                <h1 class="font-heading text-3xl font-bold text-[#00d4b8]">Prontuário</h1>
                 <p class="font-body text-sm text-gray-500 mt-1">Gerado em: <span id="rep-generated-date"></span></p>
             </div>
             <div class="text-right">
@@ -1462,7 +1480,7 @@
         </div>
         
         <div class="mb-8">
-            <h4 class="font-heading font-bold text-[#6F4B36] uppercase text-sm mb-4 flex items-center gap-2">
+            <h4 class="font-heading font-bold text-[#00d4b8] uppercase text-sm mb-4 flex items-center gap-2">
                 <i class="fa-solid fa-timeline"></i>
                 Linha do Tempo
             </h4>
@@ -1472,13 +1490,13 @@
         </div>
         
         <div class="mb-6">
-            <h4 class="font-heading font-bold text-[#6F4B36] uppercase text-sm mb-4 flex items-center gap-2">
+            <h4 class="font-heading font-bold text-[#00d4b8] uppercase text-sm mb-4 flex items-center gap-2">
                 <i class="fa-solid fa-sack-dollar"></i>
                 Financeiro
             </h4>
             <div class="bg-[#FCF7F9] p-4 rounded-xl mb-4 border border-[#CBE5F7]">
                 <span class="font-body text-sm text-gray-600">Total investido:</span>
-                <span class="font-heading font-bold text-lg text-[#6F4B36] ml-2" id="rep-total-invested"></span>
+                <span class="font-heading font-bold text-lg text-[#00d4b8] ml-2" id="rep-total-invested"></span>
             </div>
             <div class="table-container">
                 <table class="w-full text-sm">
@@ -1510,7 +1528,7 @@
 <div class="hidden fixed bottom-6 left-6 bg-white p-6 rounded-3xl shadow-2xl w-80 border-2 border-[#CBE5F7] z-40 quick-panel" id="patient-quick-panel">
     <div class="flex justify-between items-start mb-4">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-[#6F4B36] rounded-xl flex items-center justify-center">
+            <div class="w-10 h-10 bg-[#00d4b8] rounded-xl flex items-center justify-center">
                 <i class="fa-solid fa-user text-white"></i>
             </div>
             <div>
@@ -1518,7 +1536,7 @@
                 <div class="font-body text-xs text-gray-500" id="quick-cpf"></div>
             </div>
         </div>
-        <button class="text-gray-400 hover:text-[#6F4B36] transition-colors" onclick="document.getElementById('patient-quick-panel').classList.add('hidden')">
+        <button class="text-gray-400 hover:text-[#00d4b8] transition-colors" onclick="document.getElementById('patient-quick-panel').classList.add('hidden')">
             <i class="fa-solid fa-times"></i>
         </button>
     </div>
@@ -1528,16 +1546,16 @@
         
         <div class="flex justify-between border-b border-[#CBE5F7] border-opacity-30 pb-2">
             <span>Telefone:</span>
-            <span class="font-medium text-[#6F4B36]" id="quick-tel"></span>
+            <span class="font-medium text-[#00d4b8]" id="quick-tel"></span>
         </div>
         
         <div class="flex justify-between border-b border-[#CBE5F7] border-opacity-30 pb-2">
             <span>Última visita:</span>
-            <span class="font-medium text-[#6F4B36]" id="quick-last-visit"></span>
+            <span class="font-medium text-[#00d4b8]" id="quick-last-visit"></span>
         </div>
         
         <div class="bg-[#FCF7F9] p-3 rounded-xl border border-[#CBE5F7] border-opacity-30">
-            <div class="font-heading font-bold text-[#6F4B36] text-xs mb-1">Última queixa:</div>
+            <div class="font-heading font-bold text-[#00d4b8] text-xs mb-1">Última queixa:</div>
             <div class="font-body text-xs italic text-gray-600" id="quick-last-anamnese">Nenhum registro.</div>
         </div>
         
@@ -1552,7 +1570,7 @@
         
         <div class="flex justify-between pt-2">
             <span class="font-heading font-bold text-gray-700">Total investido:</span>
-            <span class="font-heading font-bold text-[#6F4B36]" id="quick-total-spent">R$ 0,00</span>
+            <span class="font-heading font-bold text-[#00d4b8]" id="quick-total-spent">R$ 0,00</span>
         </div>
     </div>
     
@@ -1576,7 +1594,7 @@
 
 <div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-cupom" style="background-color: rgba(111,75,54,0.2);">
     <form class="bg-white p-8 rounded-3xl shadow-2xl w-96 modal-content" id="form-cupom">
-        <h3 class="font-heading text-2xl font-bold text-[#6F4B36] mb-6">Cadastrar Cupom</h3>
+        <h3 class="font-heading text-2xl font-bold text-[#00d4b8] mb-6">Cadastrar Cupom</h3>
 
         <div class="space-y-4">
             <div>
@@ -1623,7 +1641,7 @@
 
 <div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-venda-protocolo" style="background-color: rgba(111,75,54,0.2);">
     <form class="bg-white p-8 rounded-3xl shadow-2xl w-[520px] max-w-[95vw] modal-content" id="form-venda-protocolo">
-        <h3 class="font-heading text-2xl font-bold text-[#6F4B36] mb-6">Vender Protocolo</h3>
+        <h3 class="font-heading text-2xl font-bold text-[#00d4b8] mb-6">Vender Protocolo</h3>
 
         <div class="space-y-4">
             <div>
@@ -1654,8 +1672,8 @@
 
             <div class="bg-[#FCF7F9] p-4 rounded-2xl border border-[#CBE5F7]">
                 <div class="flex items-center justify-between">
-                    <span class="font-heading text-sm font-bold text-[#6F4B36]">Valor final</span>
-                    <span class="font-heading text-xl font-bold text-[#6F4B36]" id="sell-prot-total">R$ 0,00</span>
+                    <span class="font-heading text-sm font-bold text-[#00d4b8]">Valor final</span>
+                    <span class="font-heading text-xl font-bold text-[#00d4b8]" id="sell-prot-total">R$ 0,00</span>
                 </div>
             </div>
         </div>
@@ -1672,10 +1690,10 @@
     <form class="bg-white p-8 rounded-3xl shadow-2xl w-[640px] max-w-[95vw] modal-content" id="form-recompensa-admin">
         <div class="flex justify-between items-start gap-4 mb-6 border-b border-[#CBE5F7] pb-4">
             <div>
-                <h3 class="font-heading text-2xl font-bold text-[#6F4B36]" id="modal-recompensa-admin-title">Nova Recompensa</h3>
+                <h3 class="font-heading text-2xl font-bold text-[#00d4b8]" id="modal-recompensa-admin-title">Nova Recompensa</h3>
                 <p class="font-body text-sm text-gray-500">Defina os prêmios disponíveis no Clube Premium.</p>
             </div>
-            <button class="text-gray-400 hover:text-[#6F4B36] transition-colors" type="button" onclick="closeModal('modal-recompensa-admin')">
+            <button class="text-gray-400 hover:text-[#00d4b8] transition-colors" type="button" onclick="closeModal('modal-recompensa-admin')">
                 <i class="fa-solid fa-times text-xl"></i>
             </button>
         </div>
@@ -1734,10 +1752,10 @@
     <form class="bg-white p-8 rounded-3xl shadow-2xl w-[560px] max-w-[95vw] modal-content" id="form-resgate-admin">
         <div class="flex justify-between items-start gap-4 mb-6 border-b border-[#CBE5F7] pb-4">
             <div>
-                <h3 class="font-heading text-2xl font-bold text-[#6F4B36]">Atualizar Resgate</h3>
+                <h3 class="font-heading text-2xl font-bold text-[#00d4b8]">Atualizar Resgate</h3>
                 <p class="font-body text-sm text-gray-500">Defina o status e registre observações operacionais.</p>
             </div>
-            <button class="text-gray-400 hover:text-[#6F4B36] transition-colors" type="button" onclick="closeModal('modal-resgate-admin')">
+            <button class="text-gray-400 hover:text-[#00d4b8] transition-colors" type="button" onclick="closeModal('modal-resgate-admin')">
                 <i class="fa-solid fa-times text-xl"></i>
             </button>
         </div>
@@ -1783,10 +1801,10 @@
     <div class="bg-white rounded-3xl shadow-2xl w-[360px] max-w-[92vw] p-6 modal-content">
         <div class="flex items-start justify-between gap-4 mb-4">
             <div>
-                <h3 class="font-heading text-xl font-bold text-[#6F4B36]" id="calendar-event-menu-title">Agendamento</h3>
+                <h3 class="font-heading text-xl font-bold text-[#00d4b8]" id="calendar-event-menu-title">Agendamento</h3>
                 <p class="text-sm text-gray-500" id="calendar-event-menu-subtitle">Detalhes</p>
             </div>
-            <button type="button" class="text-gray-400 hover:text-[#6F4B36]" onclick="closeModal('modal-calendar-event-menu')">
+            <button type="button" class="text-gray-400 hover:text-[#00d4b8]" onclick="closeModal('modal-calendar-event-menu')">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
         </div>
