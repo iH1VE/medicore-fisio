@@ -3,20 +3,20 @@
 
 /* Reset e Variáveis */
 :root {
-    --primary: #6F4B36;
-    --primary-light: #8B6B5A;
-    --primary-dark: #5A3C2B;
-    --highlight: #CBE5F7;
-    --highlight-light: #E5F0FA;
-    --background: #FCF7F9;
+    --primary: #00d4b8;
+    --primary-light: #33ddc7;
+    --primary-dark: #009e8a;
+    --highlight: #e0f7f4;
+    --highlight-light: #f0fdfb;
+    --background: #f0f4f8;
     --white: #FFFFFF;
     --gray-light: #F3F4F6;
     --gray: #9CA3AF;
     --gray-dark: #4B5563;
-    --shadow-sm: 0 4px 12px rgba(111, 75, 54, 0.03);
-    --shadow-md: 0 8px 20px rgba(111, 75, 54, 0.05);
-    --shadow-lg: 0 12px 30px rgba(111, 75, 54, 0.08);
-    --shadow-xl: 0 20px 40px rgba(111, 75, 54, 0.1);
+    --shadow-sm: 0 4px 12px rgba(0,0,0,0.03);
+    --shadow-md: 0 8px 20px rgba(0,0,0,0.05);
+    --shadow-lg: 0 12px 30px rgba(0,0,0,0.08);
+    --shadow-xl: 0 20px 40px rgba(0,0,0,0.10);
     --radius-sm: 12px;
     --radius-md: 16px;
     --radius-lg: 20px;
@@ -34,7 +34,7 @@
 body {
     font-family: 'Open Sans', sans-serif;
     background-color: var(--background);
-    color: #2D3E50;
+    color: #1e293b;
     line-height: 1.6;
     font-size: 16px;
 }
@@ -135,7 +135,7 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 
 .btn-secondary {
     background: var(--highlight);
-    color: #2D3E50;
+    color: #1e293b;
     font-family: 'Poppins', sans-serif;
     font-weight: 500;
     padding: 0.75rem 1.5rem;
@@ -164,7 +164,7 @@ h1, h2, h3, h4, h5, h6, .font-heading {
     border-radius: var(--radius-md);
     transition: all 0.2s ease;
     background: white;
-    border: 1px solid rgba(111, 75, 54, 0.1);
+    border: 1px solid rgba(0,0,0,0.10);
     font-size: 0.95rem;
     display: inline-flex;
     align-items: center;
@@ -181,7 +181,7 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 .nav-link:hover {
     background: var(--highlight);
     border-color: var(--highlight);
-    color: #2D3E50;
+    color: #1e293b;
 }
 
 .nav-link:hover i {
@@ -378,7 +378,7 @@ input, select, textarea {
 
 input:focus, select:focus, textarea:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(111, 75, 54, 0.1);
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.10);
     outline: none;
 }
 
@@ -406,7 +406,7 @@ input:hover, select:hover, textarea:hover {
 
 .badge-secondary {
     background: var(--highlight);
-    color: #2D3E50;
+    color: #1e293b;
 }
 
 /* Section Titles */
@@ -559,17 +559,17 @@ body {
 }
 
 .sidebar {
-    width: 300px;
-    background: rgba(255,255,255,0.96);
-    border-right: 1px solid rgba(203, 229, 247, 0.45);
-    box-shadow: 8px 0 30px rgba(111, 75, 54, 0.05);
+    width: 256px;
+    background: #1a2647;
+    border-right: none;
+    box-shadow: none;
     padding: 1.5rem 1.1rem;
     position: sticky;
     top: 0;
     height: 100vh;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
 }
 
 .sidebar-brand {
@@ -583,12 +583,12 @@ body {
     width: 64px;
     height: 64px;
     border-radius: 18px;
-    background: linear-gradient(135deg, rgba(111,75,54,0.12), rgba(203,229,247,0.45));
+    background: rgba(255,255,255,0.1);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    border: 1px solid rgba(111,75,54,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
     flex-shrink: 0;
 }
 
@@ -676,9 +676,9 @@ body {
     top: 0;
     z-index: 25;
     padding: 1.5rem 2rem 1rem;
-    background: rgba(252, 247, 249, 0.92);
+    background: rgba(255,255,255,0.97);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(203, 229, 247, 0.35);
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .content-eyebrow {
@@ -907,7 +907,7 @@ aside::-webkit-scrollbar {
 }
 
 .login-input:focus {
-    border-color: #7B4F34;
+    border-color: #009e8a;
     box-shadow: 0 0 0 3px rgba(123,79,52,0.12);
 }
 
@@ -916,7 +916,7 @@ aside::-webkit-scrollbar {
     border: none;
     border-radius: 12px;
     padding: 14px 16px;
-    background: #7B4F34;
+    background: #009e8a;
     color: #fff;
     font-weight: 600;
     cursor: pointer;
@@ -991,3 +991,46 @@ aside::-webkit-scrollbar {
     overflow-y: auto;
     padding-right: 2px;
 }
+
+/* === REDESIGN FIGMA === */
+body::before { content:""; position:fixed; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,#00d4b8,#33ddc7); z-index:9999; }
+.sidebar .brand-text h1 { color:#ffffff; font-size:1.05rem; }
+.sidebar .brand-text .badge, #user-role-badge { background:rgba(0,212,184,0.2)!important; color:#00d4b8!important; border:none!important; }
+.sidebar .nav-link { color:rgba(255,255,255,0.6)!important; background:transparent!important; border:none!important; border-left:3px solid transparent!important; border-radius:0 8px 8px 0!important; transition:all 0.15s; }
+.sidebar .nav-link i { color:inherit!important; }
+.sidebar .nav-link:hover { background:rgba(255,255,255,0.08)!important; color:rgba(255,255,255,0.9)!important; }
+.sidebar .nav-link.active { background:rgba(0,212,184,0.15)!important; color:#00d4b8!important; border-left:3px solid #00d4b8!important; }
+.sidebar-user-card { background:rgba(255,255,255,0.07)!important; border:1px solid rgba(255,255,255,0.1)!important; box-shadow:none!important; border-radius:12px!important; }
+.sidebar-footer span, .sidebar-footer .text-gray-600, #header-username { color:rgba(255,255,255,0.65)!important; }
+.sidebar-logout { background:rgba(255,255,255,0.08)!important; color:rgba(255,255,255,0.7)!important; border:1px solid rgba(255,255,255,0.12)!important; }
+.sidebar-logout:hover { background:rgba(255,255,255,0.15)!important; color:#ffffff!important; }
+#alert-badge { background:#00d4b8!important; color:#1a2647!important; }
+.btn-primary { background:#00d4b8!important; border-color:#00d4b8!important; color:#ffffff!important; }
+.btn-primary:hover { background:#009e8a!important; border-color:#009e8a!important; }
+
+/* === AJUSTE BORDER-RADIUS — Figma usa cantos menores === */
+:root {
+    --radius-sm: 6px !important;
+    --radius-md: 8px !important;
+    --radius-lg: 12px !important;
+    --radius-xl: 14px !important;
+    --radius-2xl: 16px !important;
+}
+
+/* Modais */
+.modal-content,
+[class*="modal"] .bg-white,
+[class*="modal"] .rounded,
+.rounded-2xl { border-radius: 16px !important; }
+.rounded-3xl  { border-radius: 20px !important; }
+.rounded-xl   { border-radius: 12px !important; }
+
+/* Nav links do sidebar — estilo Figma (borda esquerda, sem pill) */
+.sidebar .nav-link {
+    border-radius: 0 8px 8px 0 !important;
+    padding: 0.7rem 1rem !important;
+    font-size: 0.9rem !important;
+}
+
+/* Cards */
+.card { border-radius: 12px !important; }
