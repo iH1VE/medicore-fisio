@@ -895,29 +895,35 @@
     
 <!-- CUPONS -->
 <section class="hidden gap-section" id="cupons">
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex justify-between items-center mb-8">
         <div>
-            <h2 class="text-2xl font-bold text-gray-900">Cupons</h2>
-            <p class="text-sm text-gray-500 mt-1">Gerencie cupons de desconto</p>
+            <h2 class="text-3xl font-bold" style="color:#262261;">Cupons</h2>
+            <p class="text-sm text-gray-600 mt-1">Gerencie cupons de desconto</p>
         </div>
-        <button class="btn-primary" onclick="openModal('modal-cupom')">
-            <i class="fa-solid fa-plus mr-2"></i>Novo Cupom
+        <button class="flex items-center gap-2 px-6 py-3 font-medium rounded-lg transition-colors shadow-sm"
+            style="background:#00d4b8;color:#262261;"
+            onmouseover="this.style.background='#00c4a9'" onmouseout="this.style.background='#00d4b8'"
+            onclick="openModal('modal-cupom')">
+            <i class="fa-solid fa-plus"></i>Novo Cupom
         </button>
     </div>
 
-    <div class="table-container">
-        <table class="w-full text-sm">
-            <thead>
-                <tr>
-                    <th>Código</th>
-                    <th>Tipo</th>
-                    <th>Valor</th>
-                    <th>Status</th>
-                    <th>Validade</th>
-                </tr>
-            </thead>
-            <tbody id="table-cupons-body"></tbody>
-        </table>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Código</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Desconto</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Usos</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Validade</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="table-cupons-body" class="divide-y divide-gray-200"></tbody>
+            </table>
+        </div>
     </div>
 </section>
 
@@ -1755,7 +1761,6 @@
 
 <div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-cupom">
     <form class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md modal-content" id="form-cupom">
-        <input type="hidden" id="cupom-id">
         <h3 class="text-xl font-bold mb-6" style="color:#262261;">Cadastrar Cupom</h3>
 
         <div class="space-y-4">
