@@ -46,6 +46,25 @@ if ($patientId === '') {
 
 $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
 
+// Gera código de indicação único para este usuário (ex: MARIA2B3F)
+$nomeBase = strtoupper(preg_replace('/[^A-Za-z]/i', '', $nome));
+$nomeBase = substr($nomeBase, 0, 5);
+$myReferralCode = $nomeBase . strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
+
+// Garante unicidade
+$tentativas = 0;
+do {
+    $stmtCheck = $conn->prepare("SELECT id FROM club_users WHERE referral_code = ? LIMIT 1");
+    $stmtCheck->bind_param("s", $myReferralCode);
+    $stmtCheck->execute();
+    $exists = $stmtCheck->get_result()->fetch_assoc();
+    $stmtCheck->close();
+    if ($exists) {
+        $myReferralCode = $nomeBase . strtoupper(substr(bin2hex(random_bytes(2)), 0, 4));
+    }
+    $tentativas++;
+} while ($exists && $tentativas < 10);
+
 $stmt = $conn->prepare("
     INSERT INTO club_users (
         patient_id, nome, email, telefone, senha_hash, referral_code,
@@ -53,7 +72,7 @@ $stmt = $conn->prepare("
     ) VALUES (?, ?, ?, ?, ?, ?, 0, 0, 'Bronze', 'ativo', NOW(), NOW())
 ");
 
-$stmt->bind_param("ssssss", $patientId, $nome, $email, $telefone, $senhaHash, $referralCode);
+$stmt->bind_param("ssssss", $patientId, $nome, $email, $telefone, $senhaHash, $myReferralCode);
 $ok = $stmt->execute();
 $clubUserId = $stmt->insert_id;
 $stmt->close();

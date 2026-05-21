@@ -29,7 +29,7 @@ if (!$user || !password_verify($senha, $user["senha"])) {
 $_SESSION["user_id"] = (int)$user["id"];
 $_SESSION["user_nome"] = $user["nome"];
 $_SESSION["user_email"] = $user["email"];
-$_SESSION["user_tipo"] = $user["tipo"];
+$_SESSION["user_tipo"] = strtoupper($user["tipo"]);
 
 echo json_encode([
     "ok" => true,
@@ -37,6 +37,6 @@ echo json_encode([
         "id" => (int)$user["id"],
         "nome" => $user["nome"],
         "email" => $user["email"],
-        "tipo" => $user["tipo"]
+        "tipo" => strtoupper($user["tipo"])
     ]
 ]);
