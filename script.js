@@ -248,7 +248,8 @@ const API_COLLECTION_URLS = {
     agendamentos: 'api/appointments.php',
     financeiro: 'api/financial.php',
     estoque: 'api/stock.php',
-    protocolos: 'api/protocols.php'
+    protocolos: 'api/protocols.php',
+    cupons: 'api/cupons.php'
 };
 let USING_SERVER_DB = false;
 let USING_RESOURCE_APIS = false;
@@ -377,7 +378,8 @@ async function loadDB() {
             agendamentos: resourceData.agendamentos || [],
             financeiro: resourceData.financeiro || [],
             estoque: resourceData.estoque || [],
-            protocolos: resourceData.protocolos || initialData.protocolos
+            protocolos: resourceData.protocolos || initialData.protocolos,
+            cupons: resourceData.cupons || []
         };
         if (!DB.avaliacoes) DB.avaliacoes = [];
         if (!DB.atendimentos) DB.atendimentos = [];
@@ -3283,6 +3285,7 @@ window.onload = async function() {
             const user = JSON.parse(savedSession);
 
             currentUserRole = user.tipo;
+            fetch('api/restore_session.php', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({user_id: user.id}) }).catch(()=>{});
             DB.currentUser = user.nome;
 
             if (modalLogin) {
@@ -3723,12 +3726,17 @@ document.addEventListener('submit', async (e) => {
             return;
         }
 
+        const editId = (document.getElementById('cupom-id') || {}).value || '';
         const payload = {
-            id: generateId(),
-            codigo: document.getElementById('cupom-codigo').value.trim().toUpperCase(),
-            tipo: document.getElementById('cupom-tipo').value,
-            valor: parseFloat(document.getElementById('cupom-valor').value || 0),
-            ativo: document.getElementById('cupom-ativo').value === '1'
+            id:             editId || generateId(),
+            codigo:         document.getElementById('cupom-codigo').value.trim().toUpperCase(),
+            tipo:           document.getElementById('cupom-tipo').value,
+            valor:          parseFloat(document.getElementById('cupom-valor').value || 0),
+            ativo:          document.getElementById('cupom-ativo').value === '1',
+            validadeInicio: document.getElementById('cupom-validade-inicio')?.value || null,
+            validadeFim:    document.getElementById('cupom-validade-fim')?.value    || null,
+            limite:         document.getElementById('cupom-limite')?.value ? parseInt(document.getElementById('cupom-limite').value) : null,
+            usos:           0
         };
 
         if (!payload.codigo || !payload.valor) {
@@ -3737,11 +3745,31 @@ document.addEventListener('submit', async (e) => {
         }
 
         DB.cupons = DB.cupons || [];
-        DB.cupons.push(payload);
+        if (editId) {
+            const idx = DB.cupons.findIndex(x => String(x.id) === String(editId));
+            if (idx >= 0) {
+                payload.usos = DB.cupons[idx].usos || 0;
+                DB.cupons[idx] = payload;
+            } else {
+                DB.cupons.push(payload);
+            }
+        } else {
+            DB.cupons.push(payload);
+        }
         saveDB();
+        if (USING_RESOURCE_APIS) apiUpsertResource('cupons', payload);
+
+        // reset modal
+        const _title = document.querySelector('#modal-cupom h3');
+        const _btn   = document.querySelector('#form-cupom button[type="submit"]');
+        if (_title) _title.textContent = 'Cadastrar Cupom';
+        if (_btn)   _btn.textContent   = 'Salvar Cupom';
+        const _idField = document.getElementById('cupom-id');
+        if (_idField) _idField.value = '';
 
         closeModal('modal-cupom');
-        showToast(`Cupom ${payload.codigo} cadastrado com sucesso!`);
+        renderCouponsSection();
+        showToast(editId ? `Cupom ${payload.codigo} atualizado!` : `Cupom ${payload.codigo} cadastrado!`);
     }
 });
 
@@ -3811,26 +3839,117 @@ function syncAdminCouponNav(){
 
 
 function renderCouponsSection(){
-    const tbody = document.getElementById('table-cupons-body')
-    if(!tbody) return
+    const tbody = document.getElementById('table-cupons-body');
+    if(!tbody) return;
 
-    const cupons = DB.cupons || []
+    const cupons = DB.cupons || [];
 
     if(!cupons.length){
-        tbody.innerHTML = '<tr><td colspan="5">Nenhum cupom</td></tr>'
-        return
+        tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">
+            <i class="fa-solid fa-ticket text-3xl mb-2" style="color:#d1d5db;"></i>
+            <p class="mt-2">Nenhum cupom cadastrado.</p>
+        </td></tr>`;
+        return;
     }
 
     tbody.innerHTML = cupons.map(c => {
-        return `
-        <tr>
-            <td>${c.codigo}</td>
-            <td>${c.tipo}</td>
-            <td>${c.valor}</td>
-            <td>${c.ativo ? 'Ativo' : 'Inativo'}</td>
-            <td>${c.validadeInicio || '-'} até ${c.validadeFim || '-'}</td>
-        </tr>`
-    }).join('')
+        const isAtivo  = c.ativo === true || c.ativo === 1 || c.ativo === '1';
+        const usos     = Number(c.usos  || 0);
+        const limite   = (c.limite !== undefined && c.limite !== '' && c.limite !== null)
+                            ? Number(c.limite) : null;
+        const esgotado = limite !== null && usos >= limite;
+
+        const statusLabel = esgotado ? 'Esgotado' : (isAtivo ? 'Ativo' : 'Inativo');
+        const statusStyle = esgotado
+            ? 'background:#f3f4f6;color:#6b7280;'
+            : (isAtivo
+                ? 'background:#00d4b8;color:#262261;'
+                : 'background:#fee2e2;color:#b91c1c;');
+
+        const descontoLabel = c.tipo === 'percentual'
+            ? `${c.valor}%`
+            : `R$ ${Number(c.valor).toFixed(2).replace('.', ',')}`;
+
+        const limitLabel = limite !== null ? limite : '∞';
+        const validade   = c.validadeFim || c.validadeInicio || '-';
+
+        return `<tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                    <code class="font-mono font-bold" style="color:#262261;">${c.codigo}</code>
+                    <button type="button" title="Copiar código"
+                        onclick="navigator.clipboard.writeText('${c.codigo}').then(()=>showToast('Copiado!'))"
+                        class="p-1 hover:bg-gray-100 rounded transition-colors">
+                        <i class="fa-regular fa-copy text-gray-500 text-xs"></i>
+                    </button>
+                </div>
+            </td>
+            <td class="px-6 py-4 font-medium" style="color:#00d4b8;">${descontoLabel}</td>
+            <td class="px-6 py-4 text-gray-600">${usos} / ${limitLabel}</td>
+            <td class="px-6 py-4 text-gray-600 text-sm">${validade}</td>
+            <td class="px-6 py-4">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
+                    style="${statusStyle}">${statusLabel}</span>
+            </td>
+            <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="editCupom('${c.id}')"
+                        class="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Editar">
+                        <i class="fa-solid fa-pen text-gray-500 text-xs"></i>
+                    </button>
+                    <button type="button" onclick="deleteCupom('${c.id}')"
+                        class="p-2 hover:bg-red-50 rounded-lg transition-colors" title="Excluir">
+                        <i class="fa-solid fa-trash text-red-500 text-xs"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function editCupom(id) {
+    const c = (DB.cupons || []).find(x => String(x.id) === String(id));
+    if (!c) { showToast('Cupom não encontrado', 'error'); return; }
+
+    const idField = document.getElementById('cupom-id');
+    if (idField) idField.value = c.id;
+
+    document.getElementById('cupom-codigo').value        = c.codigo || '';
+    document.getElementById('cupom-tipo').value          = c.tipo   || 'percentual';
+    document.getElementById('cupom-valor').value         = c.valor  || '';
+    document.getElementById('cupom-ativo').value         = (c.ativo === true || c.ativo === 1) ? '1' : '0';
+    const vi = document.getElementById('cupom-validade-inicio');
+    const vf = document.getElementById('cupom-validade-fim');
+    const lm = document.getElementById('cupom-limite');
+    if (vi) vi.value = c.validadeInicio || '';
+    if (vf) vf.value = c.validadeFim    || '';
+    if (lm) lm.value = (c.limite !== null && c.limite !== undefined) ? c.limite : '';
+
+    const title = document.querySelector('#modal-cupom h3');
+    if (title) title.textContent = 'Editar Cupom';
+    const btn = document.querySelector('#form-cupom button[type="submit"]');
+    if (btn) btn.textContent = 'Salvar Alterações';
+
+    openModal('modal-cupom');
+}
+
+async function deleteCupom(id) {
+    if (!confirm('Excluir este cupom?')) return;
+    try {
+        if (USING_RESOURCE_APIS) {
+            const res = await fetch('api/cupons.php?id=' + encodeURIComponent(id), {
+                method: 'DELETE', credentials: 'same-origin'
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) throw new Error(data.error || 'Erro ao excluir');
+        }
+        DB.cupons = (DB.cupons || []).filter(x => String(x.id) !== String(id));
+        saveDB();
+        renderCouponsSection();
+        showToast('Cupom excluído.');
+    } catch(err) {
+        showToast(err.message || 'Erro ao excluir cupom', 'error');
+    }
 }
 
 /* =========================
