@@ -50,3 +50,7 @@ vendor/
 # Python
 __pycache__/
 *.pyc
+"*.bak_*"
+"*.zip"
+*.bak_*
+*.zip

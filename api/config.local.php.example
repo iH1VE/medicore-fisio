@@ -1,0 +1,8 @@
+<?php
+// Copie este arquivo para config.local.php e preencha com as credenciais reais.
+// config.local.php está no .gitignore e NUNCA deve ser commitado.
+
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'medicoredb');
+define('DB_USER', 'meusite_user');
+define('DB_PASS', 'sua_senha_aqui');
