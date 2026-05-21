@@ -1528,7 +1528,15 @@ document.addEventListener('submit', async (e) => {
             renderPacientes(); 
             updateDashboard();
             closeModal('modal-paciente');
-            logAudit('Editou', 'Paciente', p.nome);
+            const _pacOld = (DB.pacientes || []).find(x => x.id === p.id) || {};
+            const _pacDiff = { antes: {}, depois: {} };
+            ['nome','email','telefone','cpf','dataNascimento','convenio','observacoes'].forEach(k => {
+                if (String(_pacOld[k] ?? '') !== String(p[k] ?? '')) {
+                    _pacDiff.antes[k]  = _pacOld[k] ?? '';
+                    _pacDiff.depois[k] = p[k] ?? '';
+                }
+            });
+            logAudit('Editou', 'Paciente', p.nome, _pacDiff);
             showToast(`Paciente ${p.nome} atualizado com sucesso!`);
         } else {
             DB.pacientes.push(p); 
@@ -2895,9 +2903,16 @@ function renderAuditoria() {
         const acaoStyle = getAcaoStyle(a.acao);
         const acaoIcon = getAcaoIcon(a.acao);
         const inicial = (a.usuario || '?').charAt(0).toUpperCase();
+        const resumo = (() => {
+            try {
+                const d = JSON.parse(a.detalhes);
+                return d.descricao || d.nome || a.detalhes?.slice(0, 80) || '—';
+            } catch { return (a.detalhes || '—').slice(0, 80); }
+        })();
+        const entidadeLabel = a.entidade ? `<span class="text-xs text-gray-400 ml-1">[${a.entidade}]</span>` : '';
         return `
         <tr class="hover:bg-gray-50 transition-colors">
-            <td class="px-6 py-4 text-sm text-gray-600">${new Date(a.timestamp).toLocaleString('pt-BR')}</td>
+            <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">${new Date(a.timestamp).toLocaleString('pt-BR')}</td>
             <td class="px-6 py-4">
                 <div class="flex items-center gap-2">
                     <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style="background:#262261;">${inicial}</div>
@@ -2909,12 +2924,135 @@ function renderAuditoria() {
                     <i class="fa-solid ${acaoIcon}" style="font-size:0.65rem;"></i>
                     ${a.acao || '—'}
                 </span>
+                ${entidadeLabel}
             </td>
-            <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">${a.detalhes?.slice(0, 80) || '—'}</td>
+            <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">${resumo}</td>
+            <td class="px-6 py-4 text-center">
+                <button onclick="openAuditoriaDetalhe('${a.id}')"
+                    class="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Ver detalhes">
+                    <i class="fa-solid fa-eye text-gray-500 text-sm"></i>
+                </button>
+            </td>
         </tr>`;
     }).join('');
 }
 
+
+function openAuditoriaDetalhe(entryId) {
+    const entry = (DB.auditoria || []).find(a => String(a.id) === String(entryId));
+    if (!entry) { showToast('Registro não encontrado', 'error'); return; }
+
+    const dt = new Date(entry.timestamp);
+    const dtStr = isNaN(dt) ? entry.timestamp : dt.toLocaleString('pt-BR', {
+        day:'2-digit', month:'2-digit', year:'numeric',
+        hour:'2-digit', minute:'2-digit', second:'2-digit'
+    });
+
+    const getAcaoStyle = (acao = '') => {
+        const a = acao.toLowerCase();
+        if (a.includes('cri') || a.includes('add')) return 'background:rgba(34,197,94,0.1);color:#16a34a;';
+        if (a.includes('edit') || a.includes('atualiz')) return 'background:rgba(59,130,246,0.1);color:#2563eb;';
+        if (a.includes('exclu') || a.includes('delet')) return 'background:rgba(239,68,68,0.1);color:#dc2626;';
+        return 'background:#f3f4f6;color:#374151;';
+    };
+
+    // Tentar parsear detalhes como JSON para exibir diff
+    let diffHtml = '';
+    let descricao = entry.detalhes || '—';
+    try {
+        const d = JSON.parse(entry.detalhes);
+        descricao = d.descricao || d.nome || entry.detalhes;
+
+        if (d.antes && d.depois) {
+            const campos = [...new Set([...Object.keys(d.antes), ...Object.keys(d.depois)])];
+            const linhas = campos
+                .filter(c => String(d.antes[c] ?? '') !== String(d.depois[c] ?? ''))
+                .map(c => `
+                    <tr class="border-b border-gray-100">
+                        <td class="py-2 pr-3 text-xs font-medium text-gray-500 whitespace-nowrap">${c}</td>
+                        <td class="py-2 pr-3 text-xs text-red-600 line-through max-w-xs truncate">${d.antes[c] ?? '—'}</td>
+                        <td class="py-2 text-xs text-green-600 font-medium max-w-xs truncate">${d.depois[c] ?? '—'}</td>
+                    </tr>`).join('');
+
+            if (linhas) {
+                diffHtml = `
+                <div class="mt-4">
+                    <p class="text-xs font-semibold text-gray-500 uppercase mb-2">Alterações</p>
+                    <div class="bg-gray-50 rounded-lg overflow-hidden">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="py-2 pr-3 text-left text-xs text-gray-400 font-medium">Campo</th>
+                                    <th class="py-2 pr-3 text-left text-xs text-gray-400 font-medium">Antes</th>
+                                    <th class="py-2 text-left text-xs text-gray-400 font-medium">Depois</th>
+                                </tr>
+                            </thead>
+                            <tbody class="px-2">${linhas}</tbody>
+                        </table>
+                    </div>
+                </div>`;
+            }
+        } else if (d.campos) {
+            // Formato alternativo: [{campo, antes, depois}]
+            const linhas = (d.campos || []).map(c => `
+                <tr class="border-b border-gray-100">
+                    <td class="py-2 pr-3 text-xs font-medium text-gray-500">${c.campo}</td>
+                    <td class="py-2 pr-3 text-xs text-red-600 line-through">${c.antes ?? '—'}</td>
+                    <td class="py-2 text-xs text-green-600 font-medium">${c.depois ?? '—'}</td>
+                </tr>`).join('');
+            if (linhas) {
+                diffHtml = `<div class="mt-4"><p class="text-xs font-semibold text-gray-500 uppercase mb-2">Alterações</p>
+                    <div class="bg-gray-50 rounded-lg p-3"><table class="w-full"><tbody>${linhas}</tbody></table></div></div>`;
+            }
+        }
+    } catch { /* detalhes é string simples */ }
+
+    const initial = (entry.usuario || '?').charAt(0).toUpperCase();
+    const acaoStyle = getAcaoStyle(entry.acao);
+
+    document.getElementById('auditoria-detalhe-content').innerHTML = `
+        <div class="space-y-4">
+            <!-- Data/hora -->
+            <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <i class="fa-regular fa-clock text-gray-400"></i>
+                <div>
+                    <p class="text-xs text-gray-400 font-medium uppercase">Data e Hora</p>
+                    <p class="text-sm font-semibold" style="color:#262261;">${dtStr}</p>
+                </div>
+            </div>
+
+            <!-- Usuário -->
+            <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0" style="background:#262261;">${initial}</div>
+                <div>
+                    <p class="text-xs text-gray-400 font-medium uppercase">Usuário</p>
+                    <p class="text-sm font-semibold" style="color:#262261;">${entry.usuario || '—'}</p>
+                </div>
+            </div>
+
+            <!-- Ação + Entidade -->
+            <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <i class="fa-solid fa-bolt text-gray-400"></i>
+                <div class="flex-1">
+                    <p class="text-xs text-gray-400 font-medium uppercase">Ação</p>
+                    <div class="flex items-center gap-2 mt-1 flex-wrap">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" style="${acaoStyle}">${entry.acao || '—'}</span>
+                        ${entry.entidade ? `<span class="text-xs px-2 py-1 bg-white border border-gray-200 rounded-full text-gray-600">${entry.entidade}</span>` : ''}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detalhes / Descrição -->
+            <div class="p-3 bg-gray-50 rounded-lg">
+                <p class="text-xs text-gray-400 font-medium uppercase mb-1">Descrição</p>
+                <p class="text-sm text-gray-700">${descricao}</p>
+            </div>
+
+            ${diffHtml}
+        </div>`;
+
+    openModal('modal-auditoria-detalhe');
+}
 
 function renderStrategyTable() {
     const tbody = document.getElementById('table-estrategia-body');
