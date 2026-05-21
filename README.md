@@ -137,9 +137,21 @@ scp -i ~/.ssh/id_ed25519 arquivo.html merceswilliam@34.121.160.84:/tmp/ \
 
 ## Segurança
 
-- Credenciais de banco **nunca commitadas** (arquivo `config.local.php` no `.gitignore`)
-- Repo GitHub configurado como **privado**
-- Histórico git limpo (reescrito com `filter-branch` após exposição acidental)
+- Credenciais de banco em `config.local.php` (gitignored) — nunca hardcoded no repo
+- `db.php` carrega de `config.local.php` com fallback para variáveis de ambiente
+- Repo GitHub **privado** · histórico reescrito após exposição acidental
+- `restore_session.php` valida token **HMAC-SHA256** antes de restaurar sessão PHP
+  - Token gerado no login: `hmac(sha256, user_id:email, SECRET_KEY)`
+  - `SECRET_KEY` definida em `config.local.php` (nunca commitada)
+  - Sem token válido, POST para restore_session retorna 403
+
+---
+
+## Convenções de código
+
+- **Formulários**: todos os `addEventListener('submit')` unificados em um único handler no `script.js` — cada formulário identificado por `e.target.id`
+- **Novas coleções**: ao adicionar, atualizar tanto `API_COLLECTION_URLS` quanto o bloco de atribuição em `loadDB()`
+- **Patches**: aplicar na VPS via script Python (`scp` + `sudo python3`) e commitar com `deploy.sh`
 
 ---
 
@@ -150,5 +162,6 @@ scp -i ~/.ssh/id_ed25519 arquivo.html merceswilliam@34.121.160.84:/tmp/ \
 | 2026-05 | Setup inicial VPS Fisio · migração banco · config Apache |
 | 2026-05 | Redesign Figma: Financeiro, Recompensas (cards), Resgates, Relatórios, Auditoria |
 | 2026-05 | Cupons: persistência no banco, design Figma, editar/excluir |
-| 2026-05 | Segurança: credenciais para config.local.php, repo privado |
+| 2026-05 | Segurança: credenciais → config.local.php, repo privado, histórico limpo |
 | 2026-05 | Calendário: layout Figma, sidebar de agenda |
+| 2026-05 | Qualidade: db.php sem hardcode, .bak/.zip removidos do git, restore_session com HMAC, listeners unificados |
