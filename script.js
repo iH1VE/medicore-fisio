@@ -331,7 +331,6 @@ async function apiLoadResources() {
 }
 
 
-
 // ============================================
 // CORE FUNCTIONS
 // ============================================
@@ -1901,6 +1900,61 @@ document.addEventListener('submit', async (e) => {
         closeModal('modal-estoque');
         showToast(`${item.nome} adicionado ao estoque`);
     }
+
+if (e.target.id === 'form-cupom') {
+        e.preventDefault();
+
+        if (currentUserRole !== 'ADMIN') {
+            showToast('Apenas administrador pode cadastrar cupons', 'error');
+            return;
+        }
+
+        const editId = (document.getElementById('cupom-id') || {}).value || '';
+        const payload = {
+            id:             editId || generateId(),
+            codigo:         document.getElementById('cupom-codigo').value.trim().toUpperCase(),
+            tipo:           document.getElementById('cupom-tipo').value,
+            valor:          parseFloat(document.getElementById('cupom-valor').value || 0),
+            ativo:          document.getElementById('cupom-ativo').value === '1',
+            validadeInicio: document.getElementById('cupom-validade-inicio')?.value || null,
+            validadeFim:    document.getElementById('cupom-validade-fim')?.value    || null,
+            limite:         document.getElementById('cupom-limite')?.value ? parseInt(document.getElementById('cupom-limite').value) : null,
+            usos:           0
+        };
+
+        if (!payload.codigo || !payload.valor) {
+            showToast('Preencha os dados do cupom', 'error');
+            return;
+        }
+
+        DB.cupons = DB.cupons || [];
+        if (editId) {
+            const idx = DB.cupons.findIndex(x => String(x.id) === String(editId));
+            if (idx >= 0) {
+                payload.usos = DB.cupons[idx].usos || 0;
+                DB.cupons[idx] = payload;
+            } else {
+                DB.cupons.push(payload);
+            }
+        } else {
+            DB.cupons.push(payload);
+        }
+        saveDB();
+        if (USING_RESOURCE_APIS) apiUpsertResource('cupons', payload);
+
+        // reset modal
+        const _title = document.querySelector('#modal-cupom h3');
+        const _btn   = document.querySelector('#form-cupom button[type="submit"]');
+        if (_title) _title.textContent = 'Cadastrar Cupom';
+        if (_btn)   _btn.textContent   = 'Salvar Cupom';
+        const _idField = document.getElementById('cupom-id');
+        if (_idField) _idField.value = '';
+
+        closeModal('modal-cupom');
+        renderCouponsSection();
+        showToast(editId ? `Cupom ${payload.codigo} atualizado!` : `Cupom ${payload.codigo} cadastrado!`);
+    }
+
 });
 
 // ============================================
@@ -3717,61 +3771,6 @@ function applyCoupon() {
     }
 }
 
-document.addEventListener('submit', async (e) => {
-    if (e.target.id === 'form-cupom') {
-        e.preventDefault();
-
-        if (currentUserRole !== 'ADMIN') {
-            showToast('Apenas administrador pode cadastrar cupons', 'error');
-            return;
-        }
-
-        const editId = (document.getElementById('cupom-id') || {}).value || '';
-        const payload = {
-            id:             editId || generateId(),
-            codigo:         document.getElementById('cupom-codigo').value.trim().toUpperCase(),
-            tipo:           document.getElementById('cupom-tipo').value,
-            valor:          parseFloat(document.getElementById('cupom-valor').value || 0),
-            ativo:          document.getElementById('cupom-ativo').value === '1',
-            validadeInicio: document.getElementById('cupom-validade-inicio')?.value || null,
-            validadeFim:    document.getElementById('cupom-validade-fim')?.value    || null,
-            limite:         document.getElementById('cupom-limite')?.value ? parseInt(document.getElementById('cupom-limite').value) : null,
-            usos:           0
-        };
-
-        if (!payload.codigo || !payload.valor) {
-            showToast('Preencha os dados do cupom', 'error');
-            return;
-        }
-
-        DB.cupons = DB.cupons || [];
-        if (editId) {
-            const idx = DB.cupons.findIndex(x => String(x.id) === String(editId));
-            if (idx >= 0) {
-                payload.usos = DB.cupons[idx].usos || 0;
-                DB.cupons[idx] = payload;
-            } else {
-                DB.cupons.push(payload);
-            }
-        } else {
-            DB.cupons.push(payload);
-        }
-        saveDB();
-        if (USING_RESOURCE_APIS) apiUpsertResource('cupons', payload);
-
-        // reset modal
-        const _title = document.querySelector('#modal-cupom h3');
-        const _btn   = document.querySelector('#form-cupom button[type="submit"]');
-        if (_title) _title.textContent = 'Cadastrar Cupom';
-        if (_btn)   _btn.textContent   = 'Salvar Cupom';
-        const _idField = document.getElementById('cupom-id');
-        if (_idField) _idField.value = '';
-
-        closeModal('modal-cupom');
-        renderCouponsSection();
-        showToast(editId ? `Cupom ${payload.codigo} atualizado!` : `Cupom ${payload.codigo} cadastrado!`);
-    }
-});
 
 // mostrar botão de cupom só para admin
 setTimeout(() => {
@@ -4104,7 +4103,6 @@ function syncAdminRewardsNav(){
 }
 
 
-
 /* =========================
    RESGATES ADMIN (CLUBE)
 ========================= */
@@ -4261,10 +4259,6 @@ function updatePaymentModalWithRedemption(baseValue) {
     totalEl.innerText = formatCurrency(finalValue);
     return finalValue;
 }
-
-
-
-
 
 
 // ============================
