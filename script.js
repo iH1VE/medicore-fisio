@@ -249,7 +249,8 @@ const API_COLLECTION_URLS = {
     financeiro: 'api/financial.php',
     estoque: 'api/stock.php',
     protocolos: 'api/protocols.php',
-    cupons: 'api/cupons.php'
+    cupons: 'api/cupons.php',
+    auditoria: 'api/auditoria.php'
 };
 let USING_SERVER_DB = false;
 let USING_RESOURCE_APIS = false;
@@ -1409,6 +1410,7 @@ async function confirmPayment() {
         }
 
         closeModal('modal-pagamento'); 
+        logAudit('Criou', 'Atendimento', DB.currentPatient?.nome || '');
         showToast(`Atendimento finalizado com sucesso!`);
         currentConsultationId = null; 
         renderAtendimentoScreen();
@@ -1479,6 +1481,7 @@ document.addEventListener('submit', async (e) => {
             if (!res.ok) throw new Error(data.error || 'Erro ao salvar recompensa');
 
             closeModal('modal-recompensa-admin');
+            logAudit('Criou', 'Recompensa', payload?.nome || '');
             showToast(data.message || 'Recompensa salva com sucesso');
             await loadRewardsAdminSection();
         } catch (err) {
@@ -1525,6 +1528,7 @@ document.addEventListener('submit', async (e) => {
             renderPacientes(); 
             updateDashboard();
             closeModal('modal-paciente');
+            logAudit('Editou', 'Paciente', p.nome);
             showToast(`Paciente ${p.nome} atualizado com sucesso!`);
         } else {
             DB.pacientes.push(p); 
@@ -1533,6 +1537,7 @@ document.addEventListener('submit', async (e) => {
             renderPacientes(); 
             updateDashboard();
             closeModal('modal-paciente');
+            logAudit('Criou', 'Paciente', p.nome);
             showToast(`Paciente ${p.nome} cadastrado com sucesso!`);
         }
     }
@@ -1606,6 +1611,7 @@ document.addEventListener('submit', async (e) => {
             renderCalendar();
             updateDashboard();
             closeModal('modal-agendamento');
+            logAudit('Editou', 'Agendamento', paciente.nome);
             showToast(`Agendamento atualizado para ${paciente.nome}`);
         } else {
             const agsCriados = [];
@@ -1687,6 +1693,7 @@ document.addEventListener('submit', async (e) => {
             renderCalendar();
             updateDashboard();
             closeModal('modal-agendamento');
+            logAudit('Criou', 'Agendamento', `${agsCriados.length}x para ${paciente.nome}`);
             showToast(`${agsCriados.length} agendamento(s) criado(s) para ${paciente.nome}`);
         }
     }
@@ -1785,6 +1792,7 @@ document.addEventListener('submit', async (e) => {
         renderPacientes();
         updateDashboard();
         renderPatientQuickReport(paciente.id);
+        logAudit('Criou', 'Venda Protocolo', `${protocolo.nome} → ${paciente.nome}`);
         showToast(`Protocolo ${protocolo.nome} vendido com sucesso para ${paciente.nome}!`);
         return;
     }
@@ -1810,9 +1818,11 @@ document.addEventListener('submit', async (e) => {
         if (editingId) {
             const existing = DB.protocolos.find(p => p.id === editingId);
             if (existing) Object.assign(existing, payload);
+            logAudit('Editou', 'Protocolo', payload.nome);
             showToast(`Protocolo ${payload.nome} atualizado com sucesso!`);
         } else {
             DB.protocolos.push(payload);
+            logAudit('Criou', 'Protocolo', payload.nome);
             showToast(`Protocolo ${payload.nome} criado com sucesso!`);
         }
 
@@ -1846,9 +1856,11 @@ document.addEventListener('submit', async (e) => {
         const existingIndex = DB.financeiro.findIndex(item => item.id === editingId);
         if (existingIndex >= 0) {
             DB.financeiro[existingIndex] = payload;
+            logAudit('Editou', 'Financeiro', payload?.descricao || '');
             showToast('Lançamento financeiro atualizado com sucesso!');
         } else {
             DB.financeiro.push(payload);
+            logAudit('Criou', 'Financeiro', payload?.descricao || '');
             showToast('Lançamento financeiro cadastrado com sucesso!');
         }
 
@@ -1898,6 +1910,7 @@ document.addEventListener('submit', async (e) => {
         if (document.getElementById('table-financial-body')) renderFinancialReport();
         updateDashboard();
         closeModal('modal-estoque');
+        logAudit('Criou', 'Estoque', item.nome);
         showToast(`${item.nome} adicionado ao estoque`);
     }
 
@@ -1952,6 +1965,7 @@ if (e.target.id === 'form-cupom') {
 
         closeModal('modal-cupom');
         renderCouponsSection();
+        logAudit(editId ? 'Editou' : 'Criou', 'Cupom', payload.codigo);
         showToast(editId ? `Cupom ${payload.codigo} atualizado!` : `Cupom ${payload.codigo} cadastrado!`);
     }
 
@@ -2004,6 +2018,7 @@ function deletePatient(id) {
 
     renderPacientes();
     updateDashboard();
+    logAudit('Deletou', 'Paciente', paciente.nome);
     showToast(`Paciente "${paciente.nome}" excluído com sucesso!`);
 }
 
@@ -2053,6 +2068,7 @@ function deleteProtocol(id) {
     }
 
     renderProtocolos();
+    logAudit('Deletou', 'Protocolo', protocolo.nome);
     showToast(`Protocolo "${protocolo.nome}" excluído com sucesso!`);
 }
 
@@ -2175,6 +2191,7 @@ function saveAnamnese() {
         tempAnamnese = rec;
         saveDB(); 
         closeModal('modal-questionnaire'); 
+        logAudit('Editou', 'Anamnese', DB.currentPatient?.nome || '');
         showToast('Anamnese salva com sucesso');
         renderAtendimentoScreen();
     } catch (err) { 
@@ -2578,6 +2595,7 @@ function deleteEstoque(id) {
     DB.estoque = DB.estoque.filter(x => x.id !== id);
     saveDB();
     renderEstoque();
+    logAudit('Deletou', 'Estoque', '');
     showToast('Item removido do estoque.');
 }
 
@@ -2712,6 +2730,7 @@ window.deleteFinancialEntry = async (id) => {
     renderFinancialReport();
     renderStrategySection();
     updateDashboard();
+    logAudit('Deletou', 'Financeiro', '');
     showToast('Lançamento removido com sucesso!');
 };
 
@@ -3945,6 +3964,7 @@ async function deleteCupom(id) {
         DB.cupons = (DB.cupons || []).filter(x => String(x.id) !== String(id));
         saveDB();
         renderCouponsSection();
+        logAudit('Deletou', 'Cupom', '');
         showToast('Cupom excluído.');
     } catch(err) {
         showToast(err.message || 'Erro ao excluir cupom', 'error');
