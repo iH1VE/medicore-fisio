@@ -139,7 +139,7 @@ scp -i ~/.ssh/id_ed25519 arquivo.html merceswilliam@34.121.160.84:/tmp/ \
 
 - Credenciais de banco em `config.local.php` (gitignored) — nunca hardcoded no repo
 - `db.php` carrega de `config.local.php` com fallback para variáveis de ambiente
-- Repo GitHub **privado** · histórico reescrito após exposição acidental
+- Repo GitHub **privado**
 - `restore_session.php` valida token **HMAC-SHA256** antes de restaurar sessão PHP
   - Token gerado no login: `hmac(sha256, user_id:email, SECRET_KEY)`
   - `SECRET_KEY` definida em `config.local.php` (nunca commitada)
