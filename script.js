@@ -1923,8 +1923,9 @@ document.addEventListener('submit', async (e) => {
     }
     
     if(e.target.id === 'form-estoque') {
+        const editingId = window.__editingAppointmentId || null;
         const item = {
-            id: window.__editingAppointmentId || generateId(),
+            id: editingId || generateId(),
             nome: document.getElementById('est-nome').value,
             lote: document.getElementById('est-lote').value || 'N/A',
             validade: document.getElementById('est-validade').value,
@@ -1934,34 +1935,47 @@ document.addEventListener('submit', async (e) => {
             preco: parseFloat(document.getElementById('est-preco').value),
             dataEntrada: getTodayISO()
         };
-        
-        DB.estoque.push(item);
-        DB.financeiro.push({
-            id: window.__editingAppointmentId || generateId(),
-            data: item.dataEntrada,
-            pacienteId: null,
-            pacienteNome: 'Estoque',
-            tipo: 'Compra de estoque',
-            valor: -Math.abs((Number(item.qtd) || 0) * (Number(item.custo) || 0)),
-            metodo: 'Custo interno',
-            parcelas: 1,
-            origem: 'Estoque',
-            categoria: 'despesa_estoque',
-            estoqueItemId: item.id,
-            detalhes: { item: item.nome, lote: item.lote }
-        });
-        saveDB();
-        if (USING_RESOURCE_APIS) {
-            await apiUpsertResource('estoque', item);
-            const stockExpense = DB.financeiro[DB.financeiro.length - 1];
-            if (stockExpense) await apiUpsertResource('financeiro', stockExpense);
+        const existingIdx = DB.estoque.findIndex(x => x.id === item.id);
+        if (existingIdx >= 0) {
+            DB.estoque[existingIdx] = item;
+            saveDB();
+            if (USING_RESOURCE_APIS) await apiUpsertResource('estoque', item);
+            renderEstoque();
+            if (document.getElementById('table-financial-body')) renderFinancialReport();
+            updateDashboard();
+            closeModal('modal-estoque');
+            logAudit('Editou', 'Estoque', item.nome);
+            showToast(`${item.nome} atualizado no estoque`);
+        } else {
+            DB.estoque.push(item);
+            DB.financeiro.push({
+                id: generateId(),
+                data: item.dataEntrada,
+                pacienteId: null,
+                pacienteNome: 'Estoque',
+                tipo: 'Compra de estoque',
+                valor: -Math.abs((Number(item.qtd) || 0) * (Number(item.custo) || 0)),
+                metodo: 'Custo interno',
+                parcelas: 1,
+                origem: 'Estoque',
+                categoria: 'despesa_estoque',
+                estoqueItemId: item.id,
+                detalhes: { item: item.nome, lote: item.lote }
+            });
+            saveDB();
+            if (USING_RESOURCE_APIS) {
+                await apiUpsertResource('estoque', item);
+                const stockExpense = DB.financeiro[DB.financeiro.length - 1];
+                if (stockExpense) await apiUpsertResource('financeiro', stockExpense);
+            }
+            renderEstoque();
+            if (document.getElementById('table-financial-body')) renderFinancialReport();
+            updateDashboard();
+            closeModal('modal-estoque');
+            logAudit('Criou', 'Estoque', item.nome);
+            showToast(`${item.nome} adicionado ao estoque`);
         }
-        renderEstoque();
-        if (document.getElementById('table-financial-body')) renderFinancialReport();
-        updateDashboard();
-        closeModal('modal-estoque');
-        logAudit('Criou', 'Estoque', item.nome);
-        showToast(`${item.nome} adicionado ao estoque`);
+        window.__editingAppointmentId = null;
     }
 
 if (e.target.id === 'form-cupom') {
