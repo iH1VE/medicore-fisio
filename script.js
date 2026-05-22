@@ -2606,8 +2606,12 @@ function renderEstoque() {
         ? `<tr><td colspan="8" class="px-6 py-10 text-center text-sm text-gray-400">Nenhum item encontrado.</td></tr>`
         : itens.map(e => {
             const st = getStatus(e);
+            const _rb = st.label === 'Vencido' ? 'border-left:4px solid #ef4444;background:#fff5f5;'
+                      : st.label === 'Estoque Baixo' ? 'border-left:4px solid #3b82f6;background:#eff6ff;'
+                      : st.label === 'Vencendo' ? 'border-left:4px solid #f59e0b;background:#fefce8;'
+                      : '';
             return `
-            <tr class="hover:bg-gray-50 transition-colors">
+            <tr class="hover:bg-gray-50 transition-colors" style="${_rb}">
                 <td class="px-6 py-4 font-medium text-sm" style="color:#262261;">${e.nome}</td>
                 <td class="px-6 py-4 text-sm text-gray-600">${e.lote || '—'}</td>
                 <td class="px-6 py-4 text-sm text-gray-600">${e.qtd ?? 0} un</td>
