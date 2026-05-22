@@ -2267,7 +2267,7 @@ function saveAnamnese() {
         DB.avaliacoes.unshift(rec);
         tempAnamnese = rec;
         saveDB();
-        if (USING_RESOURCE_APIS) await apiUpsertResource('avaliacoes', rec);
+        if (USING_RESOURCE_APIS) await apiUpsertResource('avaliacoes', rec); 
         closeModal('modal-questionnaire'); 
         logAudit('Editou', 'Anamnese', DB.currentPatient?.nome || '');
         showToast('Anamnese salva com sucesso');
