@@ -1558,6 +1558,7 @@ document.addEventListener('submit', async (e) => {
         };
         
         if (existing) {
+            const _pacOld = { ...existing };
             Object.assign(existing, p);
             DB.agendamentos.forEach(a => {
                 if (a.pacienteId === existing.id) a.pacienteNome = existing.nome;
@@ -1570,9 +1571,8 @@ document.addEventListener('submit', async (e) => {
             renderPacientes(); 
             updateDashboard();
             closeModal('modal-paciente');
-            const _pacOld = (DB.pacientes || []).find(x => x.id === p.id) || {};
             const _pacDiff = { antes: {}, depois: {} };
-            ['nome','email','telefone','cpf','dataNascimento','convenio','observacoes'].forEach(k => {
+            ['nome','email','tel','cpf','dataNascimento','endereco','tipoAtendimento','observacoes'].forEach(k => {
                 if (String(_pacOld[k] ?? '') !== String(p[k] ?? '')) {
                     _pacDiff.antes[k]  = _pacOld[k] ?? '';
                     _pacDiff.depois[k] = p[k] ?? '';
