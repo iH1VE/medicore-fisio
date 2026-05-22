@@ -113,15 +113,15 @@ Credenciais de fallback em variáveis de ambiente caso o arquivo não exista.
 bash /var/www/html/deploy.sh "descrição do que foi alterado"
 
 # Ou via SSH local
-ssh -i ~/.ssh/id_ed25519 merceswilliam@34.121.160.84 \
+ssh -i ~/.ssh/id_ed25519 <USER>@<VPS_IP> \
   "bash /var/www/html/deploy.sh 'mensagem'"
 ```
 
 Para enviar um arquivo editado localmente:
 
 ```bash
-scp -i ~/.ssh/id_ed25519 arquivo.html merceswilliam@34.121.160.84:/tmp/ \
-  && ssh -i ~/.ssh/id_ed25519 merceswilliam@34.121.160.84 \
+scp -i ~/.ssh/id_ed25519 arquivo.html <USER>@<VPS_IP>:/tmp/ \
+  && ssh -i ~/.ssh/id_ed25519 <USER>@<VPS_IP> \
      "sudo cp /tmp/arquivo.html /var/www/html/arquivo.html && bash /var/www/html/deploy.sh 'mensagem'"
 ```
 
