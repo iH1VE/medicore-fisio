@@ -383,7 +383,7 @@ async function loadDB() {
             auditoria: (resourceData.auditoria || []).map(function(a) {
                 return {
                     id:        String(a.id),
-                    timestamp: a.created_at || a.timestamp || new Date().toISOString(),
+                    timestamp: a.created_at || a.timestamp || '',
                     usuario:   a.usuario   || 'Sistema',
                     acao:      a.acao      || '',
                     entidade:  a.entidade  || '',
@@ -447,8 +447,8 @@ function saveDB() {
 }
 
 async function logAudit(acao, entidade, detalhes, diff) {
-    const usuario = DB.currentUser || 'Sistema';
-    let detalhesStr;
+    var usuario = DB.currentUser || 'Sistema';
+    var detalhesStr;
     if (diff && (diff.antes || diff.depois)) {
         detalhesStr = JSON.stringify({
             descricao: detalhes || '',
@@ -460,11 +460,11 @@ async function logAudit(acao, entidade, detalhes, diff) {
             ? detalhes
             : JSON.stringify(detalhes || '');
     }
-    const entry = {
+    var entry = {
         id:        generateId(),
         timestamp: new Date().toISOString(),
-        usuario,
-        acao,
+        usuario:   usuario,
+        acao:      acao,
         entidade:  entidade || '',
         detalhes:  detalhesStr
     };
@@ -472,20 +472,20 @@ async function logAudit(acao, entidade, detalhes, diff) {
     DB.auditoria.unshift(entry);
     if (DB.auditoria.length > 500) DB.auditoria = DB.auditoria.slice(0, 500);
     saveDB();
-
     if (USING_RESOURCE_APIS) {
         try {
-            await fetch('api/auditoria.php', {
+            fetch('api/auditoria.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'same-origin',
                 body: JSON.stringify({
-                    usuario, acao,
+                    usuario: usuario,
+                    acao: acao,
                     entidade: entry.entidade,
                     detalhes: detalhesStr
                 })
             });
-        } catch(e) { /* falha silenciosa */ }
+        } catch(e) {}
     }
 }
 
@@ -1558,7 +1558,6 @@ document.addEventListener('submit', async (e) => {
         };
         
         if (existing) {
-            const _pacOld = { ...existing }; // captura ANTES do assign
             Object.assign(existing, p);
             DB.agendamentos.forEach(a => {
                 if (a.pacienteId === existing.id) a.pacienteNome = existing.nome;
