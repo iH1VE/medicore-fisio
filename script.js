@@ -1867,8 +1867,16 @@ document.addEventListener('submit', async (e) => {
 
         if (editingId) {
             const existing = DB.protocolos.find(p => p.id === editingId);
+            const _protOld = existing ? { ...existing } : {};
             if (existing) Object.assign(existing, payload);
-            logAudit('Editou', 'Protocolo', payload.nome);
+            const _protDiff = { antes: {}, depois: {} };
+            ['nome','valor','duracao'].forEach(k => {
+                if (String(_protOld[k] ?? '') !== String(payload[k] ?? '')) {
+                    _protDiff.antes[k] = _protOld[k] ?? '';
+                    _protDiff.depois[k] = payload[k] ?? '';
+                }
+            });
+            logAudit('Editou', 'Protocolo', payload.nome, _protDiff);
             showToast(`Protocolo ${payload.nome} atualizado com sucesso!`);
         } else {
             DB.protocolos.push(payload);
@@ -1905,8 +1913,16 @@ document.addEventListener('submit', async (e) => {
 
         const existingIndex = DB.financeiro.findIndex(item => item.id === editingId);
         if (existingIndex >= 0) {
+            const _finOld = { ...DB.financeiro[existingIndex] };
             DB.financeiro[existingIndex] = payload;
-            logAudit('Editou', 'Financeiro', payload?.descricao || '');
+            const _finDiff = { antes: {}, depois: {} };
+            ['descricao','valor','categoria','status','metodo','data'].forEach(k => {
+                if (String(_finOld[k] ?? '') !== String(payload[k] ?? '')) {
+                    _finDiff.antes[k] = _finOld[k] ?? '';
+                    _finDiff.depois[k] = payload[k] ?? '';
+                }
+            });
+            logAudit('Editou', 'Financeiro', payload?.descricao || '', _finDiff);
             showToast('Lançamento financeiro atualizado com sucesso!');
         } else {
             DB.financeiro.push(payload);
@@ -1937,6 +1953,7 @@ document.addEventListener('submit', async (e) => {
         };
         const existingIdx = DB.estoque.findIndex(x => x.id === item.id);
         if (existingIdx >= 0) {
+            const _estOld = { ...DB.estoque[existingIdx] };
             DB.estoque[existingIdx] = item;
             saveDB();
             if (USING_RESOURCE_APIS) await apiUpsertResource('estoque', item);
@@ -1944,7 +1961,14 @@ document.addEventListener('submit', async (e) => {
             if (document.getElementById('table-financial-body')) renderFinancialReport();
             updateDashboard();
             closeModal('modal-estoque');
-            logAudit('Editou', 'Estoque', item.nome);
+            const _estDiff = { antes: {}, depois: {} };
+            ['nome','lote','validade','qtd','min','custo','preco'].forEach(k => {
+                if (String(_estOld[k] ?? '') !== String(item[k] ?? '')) {
+                    _estDiff.antes[k] = _estOld[k] ?? '';
+                    _estDiff.depois[k] = item[k] ?? '';
+                }
+            });
+            logAudit('Editou', 'Estoque', item.nome, _estDiff);
             showToast(`${item.nome} atualizado no estoque`);
         } else {
             DB.estoque.push(item);
@@ -2082,7 +2106,7 @@ function deletePatient(id) {
 
     renderPacientes();
     updateDashboard();
-    logAudit('Deletou', 'Paciente', paciente.nome);
+    logAudit('Deletou', 'Paciente', paciente.nome, { antes: paciente, depois: {} });
     showToast(`Paciente "${paciente.nome}" excluído com sucesso!`);
 }
 
@@ -2661,10 +2685,11 @@ function editEstoque(id) {
 
 function deleteEstoque(id) {
     if (!confirm('Remover este item do estoque?')) return;
+    const _estItem = DB.estoque.find(x => x.id === id);
     DB.estoque = DB.estoque.filter(x => x.id !== id);
     saveDB();
     renderEstoque();
-    logAudit('Deletou', 'Estoque', '');
+    logAudit('Deletou', 'Estoque', _estItem?.nome || '', { antes: _estItem || {}, depois: {} });
     showToast('Item removido do estoque.');
 }
 
@@ -2799,7 +2824,7 @@ window.deleteFinancialEntry = async (id) => {
     renderFinancialReport();
     renderStrategySection();
     updateDashboard();
-    logAudit('Deletou', 'Financeiro', '');
+    logAudit('Deletou', 'Financeiro', entry?.descricao || entry?.tipo || '', { antes: entry || {}, depois: {} });
     showToast('Lançamento removido com sucesso!');
 };
 
@@ -4160,10 +4185,11 @@ async function deleteCupom(id) {
             const data = await res.json().catch(() => ({}));
             if (!res.ok) throw new Error(data.error || 'Erro ao excluir');
         }
+        const _cupomDel = (DB.cupons || []).find(x => String(x.id) === String(id));
         DB.cupons = (DB.cupons || []).filter(x => String(x.id) !== String(id));
         saveDB();
         renderCouponsSection();
-        logAudit('Deletou', 'Cupom', '');
+        logAudit('Deletou', 'Cupom', _cupomDel?.codigo || '', { antes: _cupomDel || {}, depois: {} });
         showToast('Cupom excluído.');
     } catch(err) {
         showToast(err.message || 'Erro ao excluir cupom', 'error');
