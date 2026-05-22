@@ -361,7 +361,7 @@ function checkAlerts() {
     });
     
     if (count > 0 && badge && alertBox && alertsList) {
-        badge.innerText = count; 
+        badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right:5px;font-size:11px;"></i>' + count + (count === 1 ? ' alerta de estoque' : ' alertas de estoque'); 
         badge.classList.remove('hidden'); 
         alertsList.innerHTML = html; 
         alertBox.classList.remove('hidden');
