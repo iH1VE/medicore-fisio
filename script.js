@@ -250,10 +250,10 @@ const API_COLLECTION_URLS = {
     estoque: 'api/stock.php',
     protocolos: 'api/protocols.php',
     cupons: 'api/cupons.php',
-    auditoria:     'api/auditoria.php',
-    atendimentos:  'api/atendimentos.php',
-    avaliacoes:    'api/avaliacoes.php',
-    catalogoExames:'api/exames.php'
+    auditoria:      'api/auditoria.php',
+    atendimentos:   'api/atendimentos.php',
+    avaliacoes:     'api/avaliacoes.php',
+    catalogoExames: 'api/exames.php'
 };
 let USING_SERVER_DB = false;
 let USING_RESOURCE_APIS = false;
@@ -392,36 +392,33 @@ async function loadDB() {
                     entidade:  a.entidade  || '',
                     detalhes:  a.detalhes  || ''
                 };
-            }),
-            atendimentos: (resourceData.atendimentos || []).map(function(a) {
-                return {
-                    id:            a.id,
-                    agendamentoId: a.agendamento_id || a.agendamentoId || '',
-                    pacienteId:    a.paciente_id    || a.pacienteId    || '',
-                    data:          a.data           || '',
-                    prescricao:    a.prescricao     || [],
-                    exames:        a.exames         || [],
-                    anamnese:      a.anamnese       || {}
-                };
-            }),
-            avaliacoes: (resourceData.avaliacoes || []).map(function(a) {
-                return {
-                    id:         a.id,
-                    pacienteId: a.paciente_id || a.pacienteId || '',
-                    timestamp:  a.timestamp  || a.created_at || '',
-                    perguntas:  a.perguntas  || [],
-                    notes:      a.notes      || ''
-                };
-            }),
-            catalogoExames: resourceData.catalogoExames && resourceData.catalogoExames.length
-                ? resourceData.catalogoExames.map(function(e) {
-                    return { id: e.id, nome: e.nome, preco: parseFloat(e.preco) || 0 };
-                  })
-                : initialData.catalogoExames
+            })
         };
-        if (!DB.avaliacoes) DB.avaliacoes = [];
-        if (!DB.atendimentos) DB.atendimentos = [];
-        if (!DB.catalogoExames) DB.catalogoExames = initialData.catalogoExames;
+        DB.atendimentos = (resourceData.atendimentos || []).map(function(a) {
+            return {
+                id:            a.id,
+                agendamentoId: a.agendamento_id || a.agendamentoId || '',
+                pacienteId:    a.paciente_id    || a.pacienteId    || '',
+                data:          a.data           || '',
+                prescricao:    a.prescricao     || [],
+                exames:        a.exames         || [],
+                anamnese:      a.anamnese       || {}
+            };
+        });
+        DB.avaliacoes = (resourceData.avaliacoes || []).map(function(a) {
+            return {
+                id:         a.id,
+                pacienteId: a.paciente_id || a.pacienteId || '',
+                timestamp:  a.timestamp  || a.created_at || '',
+                perguntas:  a.perguntas  || [],
+                notes:      a.notes      || ''
+            };
+        });
+        DB.catalogoExames = (resourceData.catalogoExames && resourceData.catalogoExames.length)
+            ? resourceData.catalogoExames.map(function(e) {
+                return { id: e.id, nome: e.nome, preco: parseFloat(e.preco) || 0 };
+              })
+            : initialData.catalogoExames;
         if (!DB.contratos) DB.contratos = initialData.contratos;
         USING_RESOURCE_APIS = true;
         USING_SERVER_DB = false;
@@ -2270,7 +2267,7 @@ function saveAnamnese() {
         DB.avaliacoes.unshift(rec);
         tempAnamnese = rec;
         saveDB();
-        if (USING_RESOURCE_APIS) await apiUpsertResource('avaliacoes', rec); 
+        if (USING_RESOURCE_APIS) await apiUpsertResource('avaliacoes', rec);
         closeModal('modal-questionnaire'); 
         logAudit('Editou', 'Anamnese', DB.currentPatient?.nome || '');
         showToast('Anamnese salva com sucesso');
