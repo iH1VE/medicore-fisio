@@ -711,11 +711,23 @@ function updateDashboard() {
     const _prevD = new Date(_now.getFullYear(), _now.getMonth() - 1, 1);
     const _ymPrev = _prevD.getFullYear() + '-' + String(_prevD.getMonth() + 1).padStart(2, '0');
 
+    // Parseia data em YYYY-MM-DD ou DD/MM/YYYY
+    function _parseYM(dateStr) {
+        if (!dateStr) return '';
+        if (/^\d{4}-\d{2}/.test(dateStr)) return dateStr.substring(0, 7); // YYYY-MM-DD
+        if (/^\d{2}\/\d{2}\/\d{4}/.test(dateStr)) {                        // DD/MM/YYYY
+            const [d, m, y] = dateStr.split('/');
+            return y + '-' + m;
+        }
+        const dt = new Date(dateStr);
+        if (!isNaN(dt)) return dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0');
+        return '';
+    }
     const _fatAtual = DB.financeiro
-        .filter(f => f.data && f.data.startsWith(_ym) && (f.valor || 0) > 0)
+        .filter(f => _parseYM(f.data) === _ym && (f.valor || 0) > 0)
         .reduce((s, f) => s + (f.valor || 0), 0);
     const _fatPrev  = DB.financeiro
-        .filter(f => f.data && f.data.startsWith(_ymPrev) && (f.valor || 0) > 0)
+        .filter(f => _parseYM(f.data) === _ymPrev && (f.valor || 0) > 0)
         .reduce((s, f) => s + (f.valor || 0), 0);
 
     const _salesEl = document.getElementById('kpi-sales');
