@@ -538,7 +538,6 @@ window.login = async function () {
         });
 
         const data = await res.json();
-        console.log("Resposta login:", data);
 
         if (!res.ok || !data.ok) {
             alert(data.error || "Login inválido");
@@ -551,7 +550,11 @@ window.login = async function () {
         localStorage.setItem("medicore_session", JSON.stringify(data.user));
 
         document.getElementById("modal-login").classList.add("hidden");
-        document.getElementById("header-username").innerHTML = `<i class="fa-regular fa-user mr-2"></i>${data.user.nome}`;
+        const _hdrUserEl = document.getElementById("header-username");
+        if (_hdrUserEl) {
+            _hdrUserEl.innerHTML = '<i class="fa-regular fa-user mr-2"></i>';
+            _hdrUserEl.appendChild(document.createTextNode(data.user.nome));
+        }
         document.getElementById("user-role-badge").innerHTML =
             data.user.tipo === "ADMIN"
                 ? "Administrador"
@@ -3520,7 +3523,7 @@ function simulateUserFlow() {
 
 function logout() {
     localStorage.removeItem("medicore_session");
-    location.reload();
+    fetch('/api/logout.php', { method: 'POST' }).catch(() => {}).finally(() => location.reload());
 }
 
 window.showSection = function(id) {
@@ -3581,8 +3584,21 @@ window.onload = async function() {
         try {
             const user = JSON.parse(savedSession);
 
+            // Valida sessão no servidor — não confia apenas no localStorage
+            let _srvSession = { ok: false };
+            try {
+                const _srvRes = await fetch('api/restore_session.php', { method: 'GET', cache: 'no-store' });
+                _srvSession = await _srvRes.json();
+            } catch (_e) { _srvSession = { ok: false }; }
+            if (!_srvSession.ok) {
+                localStorage.removeItem('medicore_session');
+                if (modalLogin) { modalLogin.classList.remove('hidden'); modalLogin.style.display = ''; }
+                if (typeof renderCalendar === 'function') renderCalendar();
+                return;
+            }
+            // Usa o tipo retornado pelo servidor (não confia no localStorage para role)
+            if (_srvSession.tipo) user.tipo = _srvSession.tipo;
             currentUserRole = user.tipo;
-            fetch('api/restore_session.php', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({user_id: user.id}) }).catch(()=>{});
             DB.currentUser = user.nome;
 
             if (modalLogin) {
@@ -3591,7 +3607,8 @@ window.onload = async function() {
             }
 
             if (headerUsername) {
-                headerUsername.innerHTML = `<i class="fa-regular fa-user mr-2"></i>${user.nome}`;
+                headerUsername.innerHTML = '<i class="fa-regular fa-user mr-2"></i>';
+                headerUsername.appendChild(document.createTextNode(user.nome));
             }
 
             if (userRoleBadge) {
