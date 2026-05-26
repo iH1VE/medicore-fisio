@@ -546,6 +546,7 @@ window.login = async function () {
 
         currentUserRole = data.user.tipo;
         DB.currentUser = data.user.nome;
+        await loadDB(); // Recarrega dados reais após autenticação
 
         localStorage.setItem("medicore_session", JSON.stringify(data.user));
 
