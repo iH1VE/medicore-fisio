@@ -60,7 +60,8 @@ const getFinancialTypeLabel = (value) => value === 'despesa' ? 'Despesa' : 'Rece
 
 function normalizeFinancialEntry(entry = {}) {
     const valorAbsoluto = Math.abs(Number(entry.valor || 0));
-    const inferredType = entry.tipoLancamento || getFinancialEntryType(entry);
+    const _validTipo = (entry.tipoLancamento && entry.tipoLancamento !== 'N/A' && entry.tipoLancamento !== 'N\/A');
+    const inferredType = _validTipo ? entry.tipoLancamento : getFinancialEntryType(entry);
     const signedValue = inferredType === 'despesa' ? -valorAbsoluto : valorAbsoluto;
     const categoriaRaw = entry.categoria || (inferredType === 'despesa' ? 'outros' : 'consulta');
     const status = entry.status || (Number(signedValue) < 0 ? 'pago' : 'pago');
@@ -2918,7 +2919,7 @@ function renderFinancialReport() {
                     </td>
                     <td class="px-6 py-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" style="${tipoStyle}">${getFinancialTypeLabel(entryType)}</span></td>
                     <td class="px-6 py-4 text-gray-600">${getFinancialCategoryLabel(f.categoria)}</td>
-                    <td class="px-6 py-4 font-medium" style="color:#262261;">${formatCurrency(Math.abs(Number(f.valor || 0)))}</td>
+                    <td class="px-6 py-4 font-medium" style="color:${Number(f.valor||0) < 0 ? '#dc2626' : '#262261'};">${Number(f.valor||0) < 0 ? '− ' : ''}${formatCurrency(Math.abs(Number(f.valor || 0)))}</td>
                     <td class="px-6 py-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" style="${statusStyle}">${getFinancialStatusLabel(f.status)}</span></td>
                     <td class="px-6 py-4 text-center no-print">${actionButtons}</td>
                 </tr>`;
