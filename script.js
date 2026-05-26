@@ -770,8 +770,8 @@ function updateDashboard() {
     });
     
     document.getElementById('inactive-count').innerText = `${inactive.length} encontrados`;
-    if (typeof fitAllKpiValues === 'function') setTimeout(fitAllKpiValues, 0);
-    if (typeof fitAllKpiValues === 'function') setTimeout(fitAllKpiValues, 0);
+    if (typeof fitAllKpiValues === 'function')
+        requestAnimationFrame(() => requestAnimationFrame(fitAllKpiValues));
     document.getElementById('table-inactive-patients').innerHTML = inactive.map(p => {
         const lastVisit = DB.atendimentos.filter(a => a.pacienteId === p.id)
             .sort((a,b)=>new Date(b.data)-new Date(a.data))[0];
@@ -3426,38 +3426,22 @@ window.exportConsolidatedPDF = () => {
 // VISUAL ENHANCEMENTS
 // ============================================
 
-// ── Ajusta font-size do kpi-value para caber em 1 linha ──────────────────
+// ── Ajusta font-size do kpi-value para caber em 1 linha (suave) ────────────
 function fitKpiValue(el) {
     if (!el) return;
     const card = el.closest('.kpi-card');
-    if (!card) return;
-    const maxPx = 36;   // 2.25rem
-    const minPx = 13;
+    if (!card || card.clientWidth === 0) return; // não visível, ignora
+    el.style.fontSize = ''; // reseta para CSS default
+    const maxPx = 28;
+    const minPx = 20; // nunca reduz abaixo de 20px
+    const avail = card.clientWidth - 32;
     el.style.fontSize = maxPx + 'px';
-    const avail = card.clientWidth - 48; // desconta padding 1.5rem × 2
-    for (let sz = maxPx; sz >= minPx; sz -= 0.5) {
+    if (el.scrollWidth <= avail) return; // já cabe, sem redução
+    for (let sz = maxPx - 1; sz >= minPx; sz--) {
         el.style.fontSize = sz + 'px';
-        if (el.scrollWidth <= avail) break;
+        if (el.scrollWidth <= avail) return;
     }
-}
-function fitAllKpiValues() {
-    document.querySelectorAll('.kpi-value').forEach(fitKpiValue);
-}
-// ─────────────────────────────────────────────────────────────────────────────
-
-// ── Ajusta font-size do kpi-value para caber em 1 linha ──────────────────
-function fitKpiValue(el) {
-    if (!el) return;
-    const card = el.closest('.kpi-card');
-    if (!card) return;
-    const maxPx = 36;
-    const minPx = 13;
-    el.style.fontSize = maxPx + 'px';
-    const avail = card.clientWidth - 48;
-    for (let sz = maxPx; sz >= minPx; sz -= 0.5) {
-        el.style.fontSize = sz + 'px';
-        if (el.scrollWidth <= avail) break;
-    }
+    // Se ainda não couber no mínimo, mantém 20px (trunca com CSS overflow)
 }
 function fitAllKpiValues() {
     document.querySelectorAll('.kpi-value').forEach(fitKpiValue);
@@ -3803,7 +3787,6 @@ window.openSellProtocolModal = openSellProtocolModal;
 window.openAnamneseHistory = openAnamneseHistory;
 window.viewAnamneseDetail = viewAnamneseDetail;
 window.initVisualEnhancements = initVisualEnhancements;
-window.fitAllKpiValues = fitAllKpiValues;
 window.fitAllKpiValues = fitAllKpiValues;
 
 document.addEventListener('keydown', function (e) {
