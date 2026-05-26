@@ -3414,12 +3414,49 @@ window.exportFinancialPDF = () => {
     doc.save(`financeiro_${periodLabel.replace('/', '-')}.pdf`);
 };
 
-window.exportConsolidatedExcel = () => { 
-    showToast('Exportando lista consolidada...', 'success'); 
+// Relatório financeiro consolidado → PDF
+window.exportConsolidatedPDF = () => {
+    if (typeof window.exportFinancialPDF === 'function') {
+        window.exportFinancialPDF();
+    } else {
+        showToast('Biblioteca de PDF indisponível.', 'error');
+    }
 };
 
-window.exportConsolidatedPDF = () => { 
-    showToast('Exportando PDF...', 'success'); 
+// Relatório de pacientes → Excel
+window.exportConsolidatedExcel = () => {
+    if (typeof XLSX === 'undefined') {
+        showToast('Biblioteca XLSX indisponível.', 'error');
+        return;
+    }
+    const entries = typeof buildFinancialEntries === 'function' ? buildFinancialEntries() : DB.financeiro;
+    const rows = (DB.pacientes || []).map(p => {
+        const ats = (DB.atendimentos || []).filter(a => a.pacienteId === p.id);
+        const fin = entries.filter(f => f.pacienteId === p.id);
+        const receitas = fin.filter(f => (f.valor || 0) > 0).reduce((s, f) => s + (f.valor || 0), 0);
+        const despesas = fin.filter(f => (f.valor || 0) < 0).reduce((s, f) => s + Math.abs(f.valor || 0), 0);
+        const ultima = ats.slice().sort((a, b) => new Date(b.data) - new Date(a.data))[0];
+        return {
+            Nome: p.nome || '—',
+            CPF: p.cpf || '—',
+            Telefone: p.telefone || '—',
+            Email: p.email || '—',
+            'Dt Nascimento': p.nascimento ? formatDate(p.nascimento) : '—',
+            Atendimentos: ats.length,
+            'Ultima Visita': ultima ? formatDate(ultima.data) : '—',
+            'Receitas R$': receitas.toFixed(2),
+            'Despesas R$': despesas.toFixed(2),
+            'Saldo R$': (receitas - despesas).toFixed(2),
+            Status: p.ativo === false ? 'Inativo' : 'Ativo',
+        };
+    });
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = [28,14,14,24,14,12,14,12,12,12,8].map(w => ({ wch: w }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Pacientes');
+    const hoje = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb, `pacientes_${hoje}.xlsx`);
+    showToast('Excel gerado!', 'success');
 };
 
 // ============================================
