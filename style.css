@@ -78,6 +78,8 @@ h1, h2, h3, h4, h5, h6, .font-heading {
     border: 1px solid rgba(203, 229, 247, 0.2);
     box-shadow: var(--shadow-sm);
     transition: all 0.3s ease;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .kpi-card:hover {
@@ -88,10 +90,13 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 
 .kpi-value {
     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 2.25rem;
+    font-size: clamp(1.1rem, 2.5vw, 2.25rem);
     font-weight: 700;
     color: #111827;
     line-height: 1.2;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    min-width: 0;
 }
 
 .kpi-label {
