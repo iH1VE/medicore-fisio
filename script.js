@@ -704,7 +704,36 @@ function updateDashboard() {
     
     const today = new Date().toLocaleDateString('fr-CA');
     document.getElementById('kpi-today-appts').innerText = DB.agendamentos.filter(a => a.data === today).length;
-    document.getElementById('kpi-sales').innerText = formatCurrency(DB.financeiro.reduce((s,f)=>s+f.valor,0));
+    // ── Faturamento mês atual vs mês anterior ──────────────────────────────
+    const _now = new Date();
+    const _ym  = _now.getFullYear() + '-' + String(_now.getMonth() + 1).padStart(2, '0');
+    const _prevD = new Date(_now.getFullYear(), _now.getMonth() - 1, 1);
+    const _ymPrev = _prevD.getFullYear() + '-' + String(_prevD.getMonth() + 1).padStart(2, '0');
+
+    const _fatAtual = DB.financeiro
+        .filter(f => f.data && f.data.startsWith(_ym) && (f.valor || 0) > 0)
+        .reduce((s, f) => s + (f.valor || 0), 0);
+    const _fatPrev  = DB.financeiro
+        .filter(f => f.data && f.data.startsWith(_ymPrev) && (f.valor || 0) > 0)
+        .reduce((s, f) => s + (f.valor || 0), 0);
+
+    const _salesEl = document.getElementById('kpi-sales');
+    const _trendEl = document.getElementById('kpi-sales-trend');
+    if (_salesEl) _salesEl.innerText = formatCurrency(_fatAtual);
+    if (_trendEl) {
+        if (_fatPrev > 0) {
+            const _pct = ((_fatAtual - _fatPrev) / _fatPrev * 100).toFixed(1);
+            const _isPos = _fatAtual >= _fatPrev;
+            _trendEl.textContent = (_isPos ? '▲ +' : '▼ ') + (_isPos ? _pct : Math.abs(_pct)) + '%';
+            _trendEl.className = 'kpi-trend ' + (_isPos ? 'positive' : 'negative');
+        } else if (_fatAtual > 0) {
+            _trendEl.textContent = '▲ Novo';
+            _trendEl.className = 'kpi-trend positive';
+        } else {
+            _trendEl.className = 'kpi-trend hidden';
+        }
+    }
+    // ───────────────────────────────────────────────────────────────────────
     
     // Pacientes inativos
     const limit = new Date(); 
@@ -716,6 +745,7 @@ function updateDashboard() {
     });
     
     document.getElementById('inactive-count').innerText = `${inactive.length} encontrados`;
+    if (typeof fitAllKpiValues === 'function') setTimeout(fitAllKpiValues, 0);
     document.getElementById('table-inactive-patients').innerHTML = inactive.map(p => {
         const lastVisit = DB.atendimentos.filter(a => a.pacienteId === p.id)
             .sort((a,b)=>new Date(b.data)-new Date(a.data))[0];
@@ -3370,6 +3400,25 @@ window.exportConsolidatedPDF = () => {
 // VISUAL ENHANCEMENTS
 // ============================================
 
+// ── Ajusta font-size do kpi-value para caber em 1 linha ──────────────────
+function fitKpiValue(el) {
+    if (!el) return;
+    const card = el.closest('.kpi-card');
+    if (!card) return;
+    const maxPx = 36;   // 2.25rem
+    const minPx = 13;
+    el.style.fontSize = maxPx + 'px';
+    const avail = card.clientWidth - 48; // desconta padding 1.5rem × 2
+    for (let sz = maxPx; sz >= minPx; sz -= 0.5) {
+        el.style.fontSize = sz + 'px';
+        if (el.scrollWidth <= avail) break;
+    }
+}
+function fitAllKpiValues() {
+    document.querySelectorAll('.kpi-value').forEach(fitKpiValue);
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 function initVisualEnhancements() {
     // Cards
     document.querySelectorAll('.bg-white.rounded.shadow').forEach(el => {
@@ -3709,6 +3758,7 @@ window.openSellProtocolModal = openSellProtocolModal;
 window.openAnamneseHistory = openAnamneseHistory;
 window.viewAnamneseDetail = viewAnamneseDetail;
 window.initVisualEnhancements = initVisualEnhancements;
+window.fitAllKpiValues = fitAllKpiValues;
 
 document.addEventListener('keydown', function (e) {
     const modal = document.getElementById('modal-login');
