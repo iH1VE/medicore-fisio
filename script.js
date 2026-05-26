@@ -16,6 +16,12 @@ const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', {
 }).format(val || 0);
 
 const getTodayISO = () => new Date().toISOString().split('T')[0];
+const formatAccounting = (val) => {
+    const n = Number(val || 0);
+    const s = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.abs(n));
+    return n < 0 ? `(${s})` : s;
+};
+
 const getYearFromDate = (dateString) => {
     const d = new Date(dateString);
     return Number.isNaN(d.getTime()) ? new Date().getFullYear() : d.getFullYear();
@@ -724,25 +730,30 @@ function updateDashboard() {
         if (!isNaN(dt)) return dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0');
         return '';
     }
-    const _fatAtual = DB.financeiro
-        .filter(f => _parseYM(f.data) === _ym && (f.valor || 0) > 0)
-        .reduce((s, f) => s + (f.valor || 0), 0);
-    const _fatPrev  = DB.financeiro
-        .filter(f => _parseYM(f.data) === _ymPrev && (f.valor || 0) > 0)
-        .reduce((s, f) => s + (f.valor || 0), 0);
+    // Saldo líquido = receitas + despesas (despesas já são negativas após normalização)
+    const _allEntries = typeof buildFinancialEntries === 'function' ? buildFinancialEntries() : DB.financeiro;
+    const _fatAtual = _allEntries
+        .filter(f => _parseYM(f.data) === _ym)
+        .reduce((s, f) => s + (Number(f.valor) || 0), 0);
+    const _fatPrev  = _allEntries
+        .filter(f => _parseYM(f.data) === _ymPrev)
+        .reduce((s, f) => s + (Number(f.valor) || 0), 0);
 
     const _salesEl = document.getElementById('kpi-sales');
     const _trendEl = document.getElementById('kpi-sales-trend');
-    if (_salesEl) _salesEl.innerText = formatCurrency(_fatAtual);
+    if (_salesEl) {
+        _salesEl.innerText = formatAccounting(_fatAtual);
+        _salesEl.style.color = _fatAtual < 0 ? '#dc2626' : '';
+    }
     if (_trendEl) {
-        if (_fatPrev > 0) {
-            const _pct = ((_fatAtual - _fatPrev) / _fatPrev * 100).toFixed(1);
+        if (_fatPrev !== 0) {
+            const _pct = ((_fatAtual - _fatPrev) / Math.abs(_fatPrev) * 100).toFixed(1);
             const _isPos = _fatAtual >= _fatPrev;
-            _trendEl.textContent = (_isPos ? '▲ +' : '▼ ') + (_isPos ? _pct : Math.abs(_pct)) + '%';
+            _trendEl.textContent = (_isPos ? '▲ +' : '▼ ') + Math.abs(_pct) + '%';
             _trendEl.className = 'kpi-trend ' + (_isPos ? 'positive' : 'negative');
-        } else if (_fatAtual > 0) {
-            _trendEl.textContent = '▲ Novo';
-            _trendEl.className = 'kpi-trend positive';
+        } else if (_fatAtual !== 0) {
+            _trendEl.textContent = _fatAtual > 0 ? '▲ Novo' : '▼ Déficit';
+            _trendEl.className = 'kpi-trend ' + (_fatAtual > 0 ? 'positive' : 'negative');
         } else {
             _trendEl.className = 'kpi-trend hidden';
         }
@@ -2919,7 +2930,7 @@ function renderFinancialReport() {
                     </td>
                     <td class="px-6 py-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" style="${tipoStyle}">${getFinancialTypeLabel(entryType)}</span></td>
                     <td class="px-6 py-4 text-gray-600">${getFinancialCategoryLabel(f.categoria)}</td>
-                    <td class="px-6 py-4 font-medium" style="color:${Number(f.valor||0) < 0 ? '#dc2626' : '#262261'};">${Number(f.valor||0) < 0 ? '− ' : ''}${formatCurrency(Math.abs(Number(f.valor || 0)))}</td>
+                    <td class="px-6 py-4 font-medium" style="color:${Number(f.valor||0) < 0 ? '#dc2626' : '#16a34a'};">${formatAccounting(f.valor)}</td>
                     <td class="px-6 py-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" style="${statusStyle}">${getFinancialStatusLabel(f.status)}</span></td>
                     <td class="px-6 py-4 text-center no-print">${actionButtons}</td>
                 </tr>`;
