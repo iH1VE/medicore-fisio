@@ -1,6 +1,12 @@
 <?php
 require __DIR__ . "/db.php";
 
+if (empty($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(["ok" => false, "error" => "Não autenticado"]);
+    exit;
+}
+
 $method = $_SERVER["REQUEST_METHOD"];
 
 if ($method === "GET") {

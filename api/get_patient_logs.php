@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require __DIR__ . '/_common.php';
+require_auth();
 
 header('Content-Type: application/json; charset=utf-8');
 

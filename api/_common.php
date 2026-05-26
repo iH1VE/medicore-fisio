@@ -1,6 +1,24 @@
 <?php
 require __DIR__ . '/db.php';
 
+function require_auth(): void {
+    if (empty($_SESSION['user_id'])) {
+        http_response_code(401);
+        echo json_encode(['ok' => false, 'error' => 'Não autenticado'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+}
+
+function require_role(array $roles): void {
+    require_auth();
+    $tipo = strtoupper($_SESSION['user_tipo'] ?? '');
+    if (!in_array($tipo, array_map('strtoupper', $roles), true)) {
+        http_response_code(403);
+        echo json_encode(['ok' => false, 'error' => 'Acesso não autorizado'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+}
+
 function json_input(): array {
     $raw = file_get_contents('php://input');
     if (!$raw) return [];

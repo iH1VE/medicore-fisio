@@ -11,6 +11,12 @@ header('Content-Type: application/json; charset=utf-8');
 
 $config = require '/var/www/secure/mail_config.php';
 
+if (empty($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(['ok' => false, 'error' => 'Não autenticado']);
+    exit;
+}
+
 $data = json_decode(file_get_contents('php://input'), true);
 
 $nome = trim((string)($data['nome'] ?? ''));

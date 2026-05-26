@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/_common.php';
+require_auth();
 
 ensure_table($conn, "CREATE TABLE IF NOT EXISTS appointments (
   id INT AUTO_INCREMENT PRIMARY KEY,
