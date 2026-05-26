@@ -747,6 +747,7 @@ function updateDashboard() {
     
     document.getElementById('inactive-count').innerText = `${inactive.length} encontrados`;
     if (typeof fitAllKpiValues === 'function') setTimeout(fitAllKpiValues, 0);
+    if (typeof fitAllKpiValues === 'function') setTimeout(fitAllKpiValues, 0);
     document.getElementById('table-inactive-patients').innerHTML = inactive.map(p => {
         const lastVisit = DB.atendimentos.filter(a => a.pacienteId === p.id)
             .sort((a,b)=>new Date(b.data)-new Date(a.data))[0];
@@ -3420,6 +3421,25 @@ function fitAllKpiValues() {
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ── Ajusta font-size do kpi-value para caber em 1 linha ──────────────────
+function fitKpiValue(el) {
+    if (!el) return;
+    const card = el.closest('.kpi-card');
+    if (!card) return;
+    const maxPx = 36;
+    const minPx = 13;
+    el.style.fontSize = maxPx + 'px';
+    const avail = card.clientWidth - 48;
+    for (let sz = maxPx; sz >= minPx; sz -= 0.5) {
+        el.style.fontSize = sz + 'px';
+        if (el.scrollWidth <= avail) break;
+    }
+}
+function fitAllKpiValues() {
+    document.querySelectorAll('.kpi-value').forEach(fitKpiValue);
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 function initVisualEnhancements() {
     // Cards
     document.querySelectorAll('.bg-white.rounded.shadow').forEach(el => {
@@ -3759,6 +3779,7 @@ window.openSellProtocolModal = openSellProtocolModal;
 window.openAnamneseHistory = openAnamneseHistory;
 window.viewAnamneseDetail = viewAnamneseDetail;
 window.initVisualEnhancements = initVisualEnhancements;
+window.fitAllKpiValues = fitAllKpiValues;
 window.fitAllKpiValues = fitAllKpiValues;
 
 document.addEventListener('keydown', function (e) {
