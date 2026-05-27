@@ -371,9 +371,9 @@ function checkAlerts() {
     
     if (count > 0 && badge) {
         badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right:5px;font-size:11px;"></i>' + count + (count === 1 ? ' alerta de estoque' : ' alertas de estoque');
-        badge.classList.remove('hidden');
+        badge.style.display = 'flex';
     } else if (badge) {
-        badge.classList.add('hidden');
+        badge.style.display = 'none';
     }
 }
 
