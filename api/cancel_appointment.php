@@ -1,5 +1,7 @@
 <?php
 declare(strict_types=1);
+require __DIR__ . '/_common.php';
+require_auth();
 
 require __DIR__ . '/db.php';
 

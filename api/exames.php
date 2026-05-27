@@ -1,6 +1,7 @@
 <?php
 session_start();
 require __DIR__ . '/_common.php';
+require_auth();
 
 ensure_table($conn, "CREATE TABLE IF NOT EXISTS catalogo_exames (
   id VARCHAR(60) PRIMARY KEY,

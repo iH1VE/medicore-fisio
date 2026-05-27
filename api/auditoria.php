@@ -1,6 +1,7 @@
 <?php
 session_start();
 require __DIR__ . '/_common.php';
+require_role(['ADMIN']);
 
 ensure_table($conn, "CREATE TABLE IF NOT EXISTS audit_logs (
   id INT AUTO_INCREMENT PRIMARY KEY,
