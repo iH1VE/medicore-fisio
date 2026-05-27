@@ -2751,6 +2751,7 @@ function deleteEstoque(id) {
     const _estItem = DB.estoque.find(x => x.id === id);
     DB.estoque = DB.estoque.filter(x => x.id !== id);
     saveDB();
+    if (USING_RESOURCE_APIS) apiDeleteResource('estoque', id).catch(console.error);
     renderEstoque();
     logAudit('Deletou', 'Estoque', _estItem?.nome || '', { antes: _estItem || {}, depois: {} });
     showToast('Item removido do estoque.');
