@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/_common.php';
+require_auth();
 
 $client = new Google_Client();
 $client->setAuthConfig('/var/www/keys/google.json');
