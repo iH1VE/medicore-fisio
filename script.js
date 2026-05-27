@@ -788,7 +788,7 @@ function updateDashboard() {
         return `<tr class="hover:bg-[#f0fdfb] transition-colors">
             <td class="p-3 font-medium text-gray-800">
                 <div class="flex items-center gap-2">
-                    <span>${p.nome}</span>
+                    <span>${escapeHtml(p.nome)}</span>
                     ${(p.flags?.alergia || p.flags?.atencao || p.flags?.restricao || p.flags?.ansioso || (p.observacoes || '').trim())
                         ? '<span title="Paciente com observações importantes" class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-100 text-red-600"><i class="fa-solid fa-triangle-exclamation text-xs"></i></span>'
                         : ''}
@@ -978,7 +978,7 @@ function deleteServico(id) {
 function renderProtocolos() {
     document.getElementById('table-protocolos-body').innerHTML = (DB.protocolos||[]).map(p => `
         <tr class="hover:bg-gray-50 transition-colors">
-            <td class="p-3 font-bold text-gray-900">${p.nome}</td>
+            <td class="p-3 font-bold text-gray-900">${escapeHtml(p.nome)}</td>
             <td class="p-3 text-sm">
                 ${Object.entries(p.servicos || {}).map(([k,v]) => `<span style="background:#262261;color:#fff;padding:0.2rem 0.6rem;border-radius:100px;font-size:0.7rem;font-weight:600;display:inline-flex;margin:0.1rem;" >${v}x ${k}</span>`).join('')}
             </td>
@@ -1014,10 +1014,10 @@ function renderPacientes() {
             const tipoBg   = p.tipoAtendimento === 'Particular' ? '#dbeafe' : p.tipoAtendimento === 'Clube' ? '#ede9fe' : '#dcfce7';
             const tipoText = p.tipoAtendimento === 'Particular' ? '#1d4ed8' : p.tipoAtendimento === 'Clube' ? '#7c3aed' : '#15803d';
             return `<tr class="hover:bg-gray-50 transition-colors">
-            <td class="p-3 font-semibold text-gray-900">${p.nome}</td>
+            <td class="p-3 font-semibold text-gray-900">${escapeHtml(p.nome)}</td>
             <td class="p-3 text-gray-500 text-xs">
                 ${p.tel ? `<div><i class="fa-solid fa-phone text-gray-400 mr-1"></i>${p.tel}</div>` : ''}
-                ${p.email ? `<div><i class="fa-solid fa-envelope text-gray-400 mr-1"></i>${p.email}</div>` : ''}
+                ${p.email ? `<div><i class="fa-solid fa-envelope text-gray-400 mr-1"></i>${escapeHtml(p.email)}</div>` : ''}
                 ${!p.tel && !p.email ? '—' : ''}
             </td>
             <td class="p-3"><span style="background:${tipoBg};color:${tipoText};padding:0.2rem 0.6rem;border-radius:100px;font-size:0.7rem;font-weight:600;">${p.tipoAtendimento || '—'}</span></td>
@@ -1111,8 +1111,8 @@ function renderCalendar() {
                             <i class="fa-solid fa-user-clock text-[#00d4b8]"></i>
                         </div>
                         <div>
-                            <div class="font-bold text-gray-800">${ag.pacienteNome}</div>
-                            <div class="text-xs text-gray-500">${ag.hora} • ${ag.prioridade}</div>
+                            <div class="font-bold text-gray-800">${escapeHtml(ag.pacienteNome)}</div>
+                            <div class="text-xs text-gray-500">${escapeHtml(ag.hora)} • ${escapeHtml(ag.prioridade)}</div>
                         </div>
                     </div>
                 </div>
@@ -1202,9 +1202,9 @@ function renderAtendimentoScreen() {
                             ? 'border-[#6F4B36] bg-[#FCF7F9]' 
                             : 'border-[#CBE5F7] hover:border-[#6F4B36] bg-white'}">
                 <div class="flex items-center justify-between mb-2">
-                    <div class="font-bold text-gray-800">${a.pacienteNome}</div>
+                    <div class="font-bold text-gray-800">${escapeHtml(a.pacienteNome)}</div>
                     <span class="badge ${a.prioridade === 'Emergência' ? 'badge-primary' : 'badge-secondary'} text-xs">
-                        ${a.prioridade}
+                        ${escapeHtml(a.prioridade)}
                     </span>
                 </div>
                 <div class="flex justify-between items-center">
@@ -1642,7 +1642,7 @@ document.addEventListener('submit', async (e) => {
                 }
             });
             logAudit('Editou', 'Paciente', p.nome, _pacDiff);
-            showToast(`Paciente ${p.nome} atualizado com sucesso!`);
+            showToast(`Paciente ${escapeHtml(p.nome)} atualizado com sucesso!`);
         } else {
             DB.pacientes.push(p); 
             saveDB();
@@ -1651,7 +1651,7 @@ document.addEventListener('submit', async (e) => {
             updateDashboard();
             closeModal('modal-paciente');
             logAudit('Criou', 'Paciente', p.nome);
-            showToast(`Paciente ${p.nome} cadastrado com sucesso!`);
+            showToast(`Paciente ${escapeHtml(p.nome)} cadastrado com sucesso!`);
         }
     }
     
@@ -2131,7 +2131,7 @@ function populatePatientSelect() {
     if (select) {
         select.innerHTML = '<option value="">Selecione um paciente...</option>' + 
             DB.pacientes.sort((a,b) => a.nome.localeCompare(b.nome))
-                .map(p => `<option value="${p.id}">${p.nome} • ${p.cpf || ''}</option>`).join(''); 
+                .map(p => `<option value="${p.id}">${escapeHtml(p.nome)} • ${p.cpf || ''}</option>`).join(''); 
     }
 }
 
@@ -2983,7 +2983,7 @@ function renderRelatorios() {
             .sort((a,b) => new Date(b.data) - new Date(a.data))[0];
         
         return `<tr class="hover:bg-[#FCF7F9]">
-            <td class="p-3 font-medium text-gray-800">${p.nome}</td>
+            <td class="p-3 font-medium text-gray-800">${escapeHtml(p.nome)}</td>
             <td class="p-3 text-gray-600">${p.cpf || '—'}</td>
             <td class="p-3 text-center"><span class="badge badge-secondary">${atendimentos}</span></td>
             <td class="p-3 text-right font-mono text-[#6F4B36] font-bold">${formatCurrency(totalInvestido)}</td>
