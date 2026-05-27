@@ -11,3 +11,9 @@
     Header always set Server "Apache"
 </IfModule>
 # ─────────────────────────────────────────────────────────────────
+
+# ── HSTS (só enviado via HTTPS) ──────────────────────────────
+<IfModule mod_headers.c>
+    Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains" env=HTTPS
+</IfModule>
+# ──────────────────────────────────────────────────────────────

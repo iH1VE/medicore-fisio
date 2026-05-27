@@ -16,6 +16,10 @@ const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', {
 }).format(val || 0);
 
 const getTodayISO = () => new Date().toISOString().split('T')[0];
+const escapeHtml = (s) => s == null ? '' : String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
 const formatAccounting = (val) => {
     const n = Number(val || 0);
     const s = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.abs(n));
@@ -1142,7 +1146,7 @@ function renderAgendaSidebar(dateStr) {
     }
 
     listEl.innerHTML = apts.map(apt => {
-        const paciente  = apt.pacienteNome || apt.paciente || '—';
+        const paciente  = escapeHtml(apt.pacienteNome || apt.paciente || '—');
         const servico   = apt.servico || apt.tipoConsulta || apt.especialidade || '';
         const medico    = apt.medico || apt.profissional || '';
         const hora      = apt.hora || '';
