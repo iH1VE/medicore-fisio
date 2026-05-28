@@ -3799,13 +3799,8 @@ function logout() {
 }
 
 window.showSection = function(id) {
-    if (currentUserRole === "FUNCIONARIO" && (id === "financeiro" || id === "auditoria" || id === "estrategia" || id === "protocolos")) {
-        showToast("Acesso restrito para funcionários", "error");
-        return;
-    }
-
-    if (currentUserRole === "SECRETARIA" && !["protocolos", "pacientes", "agenda", "atendimento", "resgates-admin"].includes(id)) {
-        showToast("Acesso restrito para secretaria", "error");
+    if (currentUserRole && !canAccess(id)) {
+        showToast("Você não tem permissão para acessar este módulo.", "error");
         return;
     }
 
