@@ -1110,13 +1110,28 @@
     <section id="usuarios" class="gap-section hidden">
         <div class="flex items-center justify-between mb-6">
             <div>
-                <h2 class="text-2xl font-bold" style="color:#262261;">Usuários do Sistema</h2>
-                <p class="text-sm text-gray-500 mt-1">Gerencie quem tem acesso ao MediCore</p>
+                <h2 class="text-2xl font-bold" style="color:#262261;">Controle de Acesso</h2>
+                <p class="text-sm text-gray-500 mt-1">Gerencie usuários e perfis de permissão</p>
             </div>
             <button onclick="openModalNovoUsuario()" style="background:#262261;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;">
                 <i class="fa-solid fa-user-plus"></i> Novo Usuário
             </button>
         </div>
+
+        <!-- Tabs -->
+        <div class="flex gap-2 mb-6" id="usuarios-tabs">
+            <button id="tab-usuarios-btn" onclick="switchUsuariosTab('usuarios')"
+                style="padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:14px;font-weight:600;background:#262261;color:#fff;">
+                <i class="fa-solid fa-users mr-2"></i>Usuários
+            </button>
+            <button id="tab-perfis-btn" onclick="switchUsuariosTab('perfis')"
+                style="padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:14px;font-weight:600;background:#f1f5f9;color:#64748b;">
+                <i class="fa-solid fa-id-badge mr-2"></i>Perfis
+            </button>
+        </div>
+
+        <!-- Painel Usuários -->
+        <div id="painel-usuarios">
 
         <!-- Tabela de perfis por módulo (referência) -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
@@ -1229,6 +1244,124 @@
                     style="padding:10px 24px;background:#262261;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">
                     Salvar
                 </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- MODAL PERFIL -->
+<div id="modal-perfil" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" onclick="if(event.target===this)closeModal('modal-perfil')">
+    <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;position:relative;">
+        <button onclick="closeModal('modal-perfil')" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;">&times;</button>
+        <h3 class="text-xl font-bold mb-5" style="color:#262261;">Configurar Perfil</h3>
+        <form id="form-perfil" onsubmit="savePerfil(event)">
+            <input type="hidden" id="perfil-edit-id">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nome do perfil *</label>
+                <input id="perfil-nome" type="text" required placeholder="Ex: Recepcionista Sênior"
+                    style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+            </div>
+            <div class="mb-5">
+                <p class="text-sm font-medium text-gray-700 mb-3">Permissões por módulo</p>
+                <div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="py-2 pr-4 text-left pl-3 text-gray-600 font-medium">Módulo</th>
+                                <th class="py-2 text-center text-gray-600 font-medium w-16">Ver</th>
+                                <th class="py-2 text-center text-gray-600 font-medium w-16">Editar</th>
+                                <th class="py-2 text-center text-gray-600 font-medium w-16">Excluir</th>
+                            </tr>
+                        </thead>
+                        <tbody class="px-3">
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Dashboard</td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-dashboard" onchange="onPermChange('dashboard')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
+                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
+                        </tr>
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Pacientes</td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-pacientes" onchange="onPermChange('pacientes')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-pacientes" onchange="onPermChange('pacientes')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-delete-pacientes" onchange="onPermChange('pacientes')" class="w-4 h-4"></td>
+                        </tr>
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Agenda</td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-agenda" onchange="onPermChange('agenda')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-agenda" onchange="onPermChange('agenda')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-delete-agenda" onchange="onPermChange('agenda')" class="w-4 h-4"></td>
+                        </tr>
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Atendimento</td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-atendimento" onchange="onPermChange('atendimento')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-atendimento" onchange="onPermChange('atendimento')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
+                        </tr>
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Financeiro</td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-financeiro" onchange="onPermChange('financeiro')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-financeiro" onchange="onPermChange('financeiro')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-delete-financeiro" onchange="onPermChange('financeiro')" class="w-4 h-4"></td>
+                        </tr>
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Estoque</td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-estoque" onchange="onPermChange('estoque')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-estoque" onchange="onPermChange('estoque')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-delete-estoque" onchange="onPermChange('estoque')" class="w-4 h-4"></td>
+                        </tr>
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Relatórios</td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-relatorios" onchange="onPermChange('relatorios')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
+                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
+                        </tr>
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Protocolos</td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-protocolos" onchange="onPermChange('protocolos')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-protocolos" onchange="onPermChange('protocolos')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-delete-protocolos" onchange="onPermChange('protocolos')" class="w-4 h-4"></td>
+                        </tr>
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Serviços</td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-servicos" onchange="onPermChange('servicos')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-servicos" onchange="onPermChange('servicos')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-delete-servicos" onchange="onPermChange('servicos')" class="w-4 h-4"></td>
+                        </tr>
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Cupons</td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-cupons" onchange="onPermChange('cupons')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-cupons" onchange="onPermChange('cupons')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-delete-cupons" onchange="onPermChange('cupons')" class="w-4 h-4"></td>
+                        </tr>
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Recompensas</td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-recompensas-admin" onchange="onPermChange('recompensas-admin')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-recompensas-admin" onchange="onPermChange('recompensas-admin')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
+                        </tr>
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Resgates</td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-resgates-admin" onchange="onPermChange('resgates-admin')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-resgates-admin" onchange="onPermChange('resgates-admin')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
+                        </tr>
+                        <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Auditoria</td>
+                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-auditoria" onchange="onPermChange('auditoria')" class="w-4 h-4"></td>
+                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
+                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="flex gap-3 justify-end">
+                <button type="button" onclick="closeModal('modal-perfil')"
+                    style="padding:10px 20px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;font-size:14px;cursor:pointer;color:#64748b;">Cancelar</button>
+                <button type="submit"
+                    style="padding:10px 24px;background:#262261;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Salvar Perfil</button>
             </div>
         </form>
     </div>

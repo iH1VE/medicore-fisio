@@ -130,6 +130,7 @@ function buildFinancialEntries() {
 // STATE
 // ============================================
 let currentUserRole = null;
+let currentUserPermissions = null; // perfil customizado
 
 const ROLE_PERMISSIONS = {
     ADMIN: {
@@ -159,20 +160,20 @@ const ROLE_PERMISSIONS = {
     }
 };
 
+function _resolvePerms() {
+    return currentUserPermissions || ROLE_PERMISSIONS[currentUserRole] || { sections: [], edit: [], delete: [] };
+}
 function canAccess(sectionId) {
     if (!currentUserRole) return false;
-    const perms = ROLE_PERMISSIONS[currentUserRole];
-    return perms ? perms.sections.includes(sectionId) : false;
+    return _resolvePerms().sections.includes(sectionId);
 }
 function canEdit(module) {
     if (!currentUserRole) return false;
-    const perms = ROLE_PERMISSIONS[currentUserRole];
-    return perms ? perms.edit.includes(module) : false;
+    return _resolvePerms().edit.includes(module);
 }
 function canDelete(module) {
     if (!currentUserRole) return false;
-    const perms = ROLE_PERMISSIONS[currentUserRole];
-    return perms ? perms.delete.includes(module) : false;
+    return _resolvePerms().delete.includes(module);
 }
 function getRoleLabel(tipo) {
     const l = { ADMIN: 'Administrador', SECRETARIA: 'Secretaria',
@@ -180,7 +181,7 @@ function getRoleLabel(tipo) {
     return l[tipo] || tipo;
 }
 function updateNavVisibility() {
-    const perms = ROLE_PERMISSIONS[currentUserRole] || { sections: [] };
+    const perms = _resolvePerms();
     document.querySelectorAll('.nav-link[onclick]').forEach(btn => {
         const m = (btn.getAttribute('onclick') || '').match(/showSection\(['"]([\w-]+)['"]/);
         if (m) btn.style.display = perms.sections.includes(m[1]) ? '' : 'none';
@@ -448,12 +449,30 @@ async function renderUsuarios() {
     }
 }
 
+function switchUsuariosTab(tab) {
+    const pu = document.getElementById('painel-usuarios');
+    const pp = document.getElementById('painel-perfis');
+    const bu = document.getElementById('tab-usuarios-btn');
+    const bp = document.getElementById('tab-perfis-btn');
+    if (tab === 'usuarios') {
+        pu?.classList.remove('hidden'); pp?.classList.add('hidden');
+        if (bu) { bu.style.background='#262261'; bu.style.color='#fff'; }
+        if (bp) { bp.style.background='#f1f5f9'; bp.style.color='#64748b'; }
+    } else {
+        pu?.classList.add('hidden'); pp?.classList.remove('hidden');
+        if (bp) { bp.style.background='#262261'; bp.style.color='#fff'; }
+        if (bu) { bu.style.background='#f1f5f9'; bu.style.color='#64748b'; }
+        renderPerfis();
+    }
+}
+
 function openModalNovoUsuario() {
     document.getElementById('form-usuario').reset();
     document.getElementById('usuario-edit-id').value = '';
     document.getElementById('modal-usuario-title').textContent = 'Novo Usuário';
     document.getElementById('usuario-senha-hint').textContent = 'Obrigatória para novo usuário';
     document.getElementById('usuario-ativo').checked = true;
+    _loadProfilesIntoSelect();
     openModal('modal-usuario');
 }
 
@@ -509,6 +528,156 @@ async function deleteUsuario(id) {
         renderUsuarios();
         showToast('Usuário removido.');
     } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+
+// ============================================
+// PERFIS CUSTOMIZADOS (admin only)
+// ============================================
+const PERM_MODULES = [
+    { id: 'dashboard',       label: 'Dashboard',        edit: false, delete: false },
+    { id: 'pacientes',       label: 'Pacientes',        edit: true,  delete: true  },
+    { id: 'agenda',          label: 'Agenda',           edit: true,  delete: true  },
+    { id: 'atendimento',     label: 'Atendimento',      edit: true,  delete: false },
+    { id: 'financeiro',      label: 'Financeiro',       edit: true,  delete: true  },
+    { id: 'estoque',         label: 'Estoque',          edit: true,  delete: true  },
+    { id: 'relatorios',      label: 'Relatórios',       edit: false, delete: false },
+    { id: 'protocolos',      label: 'Protocolos',       edit: true,  delete: true  },
+    { id: 'servicos',        label: 'Serviços',         edit: true,  delete: true  },
+    { id: 'cupons',          label: 'Cupons',           edit: true,  delete: true  },
+    { id: 'recompensas-admin', label: 'Recompensas',    edit: true,  delete: false },
+    { id: 'resgates-admin',  label: 'Resgates',         edit: true,  delete: false },
+    { id: 'auditoria',       label: 'Auditoria',        edit: false, delete: false },
+];
+
+async function renderPerfis() {
+    const container = document.getElementById('perfis-list');
+    if (!container) return;
+    container.innerHTML = '<p class="text-gray-400 text-sm py-4">Carregando...</p>';
+    try {
+        const res = await fetch('/api/profiles.php');
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error);
+        if (!data.profiles.length) {
+            container.innerHTML = '<p class="text-gray-400 text-sm py-4 text-center">Nenhum perfil customizado criado.</p>';
+            return;
+        }
+        container.innerHTML = data.profiles.map(p => {
+            const perms = p.permissions || {};
+            const s = (perms.sections || []).length;
+            const e = (perms.edit || []).length;
+            return `<div class="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50">
+                <div>
+                    <div class="font-semibold text-gray-800">${escapeHtml(p.nome)}</div>
+                    <div class="text-xs text-gray-400 mt-1">${s} módulo(s) visíveis · ${e} editável(is)</div>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="editPerfil(${p.id})" title="Editar" style="color:#262261;background:none;border:none;cursor:pointer;font-size:15px;"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button onclick="deletePerfil(${p.id})" title="Excluir" style="color:#ef4444;background:none;border:none;cursor:pointer;font-size:15px;"><i class="fa-solid fa-trash"></i></button>
+                </div>
+            </div>`;
+        }).join('');
+    } catch(e) {
+        container.innerHTML = `<p class="text-red-400 text-sm py-4">${e.message}</p>`;
+    }
+    // Atualiza dropdown de tipo no modal de usuário
+    _loadProfilesIntoSelect();
+}
+
+async function _loadProfilesIntoSelect() {
+    const sel = document.getElementById('usuario-tipo');
+    if (!sel) return;
+    // Remove opções customizadas anteriores
+    [...sel.options].forEach(o => { if (o.dataset.custom) o.remove(); });
+    try {
+        const res = await fetch('/api/profiles.php');
+        const data = await res.json();
+        if (!data.ok || !data.profiles.length) return;
+        const sep = document.createElement('option');
+        sep.disabled = true; sep.text = '── Perfis customizados ──'; sep.dataset.custom = '1';
+        sel.appendChild(sep);
+        data.profiles.forEach(p => {
+            const o = document.createElement('option');
+            o.value = p.nome; o.text = p.nome; o.dataset.custom = '1';
+            sel.appendChild(o);
+        });
+    } catch(_) {}
+}
+
+function openModalNovoPerfil(prefill = null) {
+    document.getElementById('perfil-edit-id').value = prefill?.id || '';
+    document.getElementById('perfil-nome').value    = prefill?.nome || '';
+    const perms = prefill?.permissions || {};
+    PERM_MODULES.forEach(m => {
+        const v = document.getElementById('perm-view-' + m.id);
+        const e = document.getElementById('perm-edit-' + m.id);
+        const d = document.getElementById('perm-delete-' + m.id);
+        if (v) v.checked = (perms.sections || []).includes(m.id);
+        if (e) e.checked = (perms.edit || []).includes(m.id);
+        if (d) d.checked = (perms.delete || []).includes(m.id);
+    });
+    openModal('modal-perfil');
+}
+
+async function editPerfil(id) {
+    try {
+        const res  = await fetch('/api/profiles.php');
+        const data = await res.json();
+        const p = (data.profiles || []).find(x => x.id === id);
+        if (p) openModalNovoPerfil(p);
+    } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+async function savePerfil(e) {
+    e.preventDefault();
+    const id   = document.getElementById('perfil-edit-id').value;
+    const nome = document.getElementById('perfil-nome').value.trim();
+    if (!nome) return;
+    const sections = [], edit = [], del = [];
+    PERM_MODULES.forEach(m => {
+        const v = document.getElementById('perm-view-' + m.id)?.checked;
+        const ed = document.getElementById('perm-edit-' + m.id)?.checked;
+        const d = document.getElementById('perm-delete-' + m.id)?.checked;
+        if (v) sections.push(m.id);
+        if (v && ed) edit.push(m.id);
+        if (v && ed && d) del.push(m.id);
+    });
+    const payload = { nome, permissions: { sections, edit, delete: del } };
+    if (id) payload.id = parseInt(id);
+    try {
+        const res  = await fetch('/api/profiles.php', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error);
+        closeModal('modal-perfil');
+        renderPerfis();
+        showToast(id ? 'Perfil atualizado!' : 'Perfil criado!');
+    } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+async function deletePerfil(id) {
+    if (!confirm('Excluir este perfil?')) return;
+    try {
+        const res  = await fetch('/api/profiles.php?id=' + id, { method: 'DELETE' });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error);
+        renderPerfis();
+        showToast('Perfil removido.');
+    } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+// Garante que edit só fica ativo se view estiver ativo, e delete só se edit
+function onPermChange(moduleId) {
+    const v = document.getElementById('perm-view-' + moduleId);
+    const e = document.getElementById('perm-edit-' + moduleId);
+    const d = document.getElementById('perm-delete-' + moduleId);
+    if (!v) return;
+    if (e && !v.checked) { e.checked = false; }
+    if (d && (!v.checked || (e && !e.checked))) { d.checked = false; }
+    if (d && d.checked && e) e.checked = true;
+    if (e && e.checked && v) v.checked = true;
 }
 
 function checkAlerts() {
@@ -718,6 +887,7 @@ window.login = async function () {
         }
 
         currentUserRole = data.user.tipo;
+        currentUserPermissions = data.user.permissions || null;
         DB.currentUser = data.user.nome;
         await loadDB(); // Recarrega dados reais após autenticação
 
@@ -3867,6 +4037,7 @@ window.onload = async function() {
             // Usa o tipo retornado pelo servidor (não confia no localStorage para role)
             if (_srvSession.tipo) user.tipo = _srvSession.tipo;
             currentUserRole = user.tipo;
+            currentUserPermissions = _srvSession.permissions || null;
             DB.currentUser = user.nome;
 
             if (modalLogin) {
