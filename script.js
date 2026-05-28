@@ -264,7 +264,8 @@ const API_COLLECTION_URLS = {
     auditoria:      'api/auditoria.php',
     atendimentos:   'api/atendimentos.php',
     avaliacoes:     'api/avaliacoes.php',
-    catalogoExames: 'api/exames.php'
+    catalogoExames: 'api/exames.php',
+    servicos: 'api/services.php'
 };
 let USING_SERVER_DB = false;
 let USING_RESOURCE_APIS = false;
@@ -403,6 +404,7 @@ async function loadDB() {
         if (resourceData.atendimentos) DB.atendimentos = resourceData.atendimentos;
         if (resourceData.avaliacoes) DB.avaliacoes = resourceData.avaliacoes;
         if (resourceData.catalogoExames && resourceData.catalogoExames.length) DB.catalogoExames = resourceData.catalogoExames;
+        if (resourceData.servicos && resourceData.servicos.length) DB.servicos = resourceData.servicos;
         if (!DB.contratos) DB.contratos = initialData.contratos;
         USING_RESOURCE_APIS = true;
         USING_SERVER_DB = false;
@@ -949,6 +951,8 @@ function saveServico(e) {
         DB.servicos.push({ id: 's' + Date.now(), nome, icone });
     }
     saveDB();
+    const _srv = DB.servicos.find(x => x.nome === nome);
+    if (USING_RESOURCE_APIS && _srv) apiUpsertResource('servicos', _srv).catch(console.error);
     renderServicos();
     closeModal('modal-novo-servico');
     showToast(id ? 'Serviço atualizado!' : 'Serviço cadastrado!');
@@ -971,6 +975,7 @@ function deleteServico(id) {
     if (!confirm('Excluir este serviço?')) return;
     DB.servicos = DB.servicos.filter(s => s.id !== id);
     saveDB();
+    if (USING_RESOURCE_APIS) apiDeleteResource('servicos', id).catch(console.error);
     renderServicos();
     showToast('Serviço removido.');
 }
