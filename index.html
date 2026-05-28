@@ -285,6 +285,7 @@
             <button class="nav-link" id="nav-resgates-btn" onclick="showSection('resgates-admin')"><i class="fa-solid fa-rotate-left"></i><span>Resgates</span></button>
             <button class="nav-link" onclick="showSection('relatorios')"><i class="fa-solid fa-chart-bar"></i><span>Relatórios</span></button>
             <button class="nav-link" onclick="showSection('auditoria')"><i class="fa-solid fa-shield"></i><span>Auditoria</span></button>
+            <button class="nav-link" id="nav-usuarios-btn" onclick="showSection('usuarios')"><i class="fa-solid fa-users-gear"></i><span>Usuários</span></button>
         </nav>
 
         <!-- header-username mantido para compatibilidade JS -->
@@ -1104,8 +1105,134 @@
             </div>
         </div>
     </section>
+
+    <!-- USUÁRIOS -->
+    <section id="usuarios" class="gap-section hidden">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-2xl font-bold" style="color:#262261;">Usuários do Sistema</h2>
+                <p class="text-sm text-gray-500 mt-1">Gerencie quem tem acesso ao MediCore</p>
+            </div>
+            <button onclick="openModalNovoUsuario()" style="background:#262261;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;">
+                <i class="fa-solid fa-user-plus"></i> Novo Usuário
+            </button>
+        </div>
+
+        <!-- Tabela de perfis por módulo (referência) -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
+            <h3 class="font-semibold text-gray-700 mb-4 flex items-center gap-2"><i class="fa-solid fa-lock text-[#00d4b8]"></i> Permissões por Perfil</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-center">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-4 py-3 text-left text-gray-600 font-medium">Módulo</th>
+                            <th class="px-4 py-3 text-gray-600 font-medium">Administrador</th>
+                            <th class="px-4 py-3 text-gray-600 font-medium">Secretaria</th>
+                            <th class="px-4 py-3 text-gray-600 font-medium">Fisioterapeuta</th>
+                            <th class="px-4 py-3 text-gray-600 font-medium">Funcionário</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100" id="perm-matrix-body">
+                        <script>
+                        (function(){
+                            const rows = [
+                                ['Dashboard',       true, false, true,  false],
+                                ['Pacientes',       true, true,  true,  false],
+                                ['Agenda',          true, true,  true,  false],
+                                ['Atendimento',     true, true,  true,  false],
+                                ['Financeiro',      true, false, false, false],
+                                ['Estoque',         true, false, true,  false],
+                                ['Relatórios',      true, false, false, false],
+                                ['Protocolos',      true, true,  true,  false],
+                                ['Serviços',        true, true,  true,  false],
+                                ['Cupons/Clube',    true, true,  false, false],
+                                ['Auditoria',       true, false, false, false],
+                                ['Usuários',        true, false, false, false],
+                            ];
+                            const check = (v) => v ? '<span style="color:#059669;font-size:16px;">✓</span>' : '<span style="color:#d1d5db;font-size:16px;">—</span>';
+                            document.getElementById('perm-matrix-body').innerHTML = rows.map(r =>
+                                `<tr class="hover:bg-gray-50"><td class="px-4 py-2 text-left text-gray-700 font-medium">${r[0]}</td>${[r[1],r[2],r[3],r[4]].map(v=>`<td class="px-4 py-2">${check(v)}</td>`).join('')}</tr>`
+                            ).join('');
+                        })();
+                        </script>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Lista de usuários -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Nome</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Email</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Perfil</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="usuarios-list">
+                    <tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">Carregando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
 </main>
 
+
+
+<!-- MODAL USUÁRIO -->
+<div id="modal-usuario" class="modal-overlay hidden" onclick="if(event.target===this)closeModal('modal-usuario')" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;">
+    <div class="modal-box" style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:460px;position:relative;">
+        <button onclick="closeModal('modal-usuario')" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;">&times;</button>
+        <h3 id="modal-usuario-title" class="text-xl font-bold mb-6" style="color:#262261;">Novo Usuário</h3>
+        <form id="form-usuario" onsubmit="saveUsuario(event)">
+            <input type="hidden" id="usuario-edit-id">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nome completo *</label>
+                <input id="usuario-nome" type="text" required placeholder="Nome do usuário"
+                    style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                <input id="usuario-email" type="email" required placeholder="email@exemplo.com"
+                    style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Perfil *</label>
+                <select id="usuario-tipo" required
+                    style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;background:#fff;box-sizing:border-box;">
+                    <option value="SECRETARIA">Secretaria / Recepção</option>
+                    <option value="FISIOTERAPEUTA">Fisioterapeuta</option>
+                    <option value="FUNCIONARIO">Funcionário</option>
+                    <option value="ADMIN">Administrador</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                <input id="usuario-senha" type="password" placeholder="••••••••"
+                    style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
+                <p id="usuario-senha-hint" class="text-xs text-gray-400 mt-1">Obrigatória para novo usuário</p>
+            </div>
+            <div class="mb-6 flex items-center gap-3">
+                <input id="usuario-ativo" type="checkbox" checked style="width:16px;height:16px;cursor:pointer;">
+                <label for="usuario-ativo" class="text-sm font-medium text-gray-700 cursor-pointer">Usuário ativo</label>
+            </div>
+            <div class="flex gap-3 justify-end">
+                <button type="button" onclick="closeModal('modal-usuario')"
+                    style="padding:10px 20px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;font-size:14px;cursor:pointer;color:#64748b;">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    style="padding:10px 24px;background:#262261;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">
+                    Salvar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <!-- MODAL AUDITORIA DETALHE -->
 <div class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" id="modal-auditoria-detalhe">
