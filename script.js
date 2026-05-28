@@ -447,6 +447,7 @@ async function renderUsuarios() {
     } catch(e) {
         tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-red-400">Erro: ${e.message}</td></tr>`;
     }
+    renderPerfilMatrix();
 }
 
 function switchUsuariosTab(tab) {
@@ -549,6 +550,90 @@ const PERM_MODULES = [
     { id: 'resgates-admin',  label: 'Resgates',         edit: true,  delete: false },
     { id: 'auditoria',       label: 'Auditoria',        edit: false, delete: false },
 ];
+
+
+async function renderPerfilMatrix() {
+    const container = document.getElementById('perm-matrix-container');
+    if (!container) return;
+
+    const MODS = [
+        { id: 'dashboard',     label: 'Dashboard' },
+        { id: 'pacientes',     label: 'Pacientes' },
+        { id: 'agenda',        label: 'Agenda' },
+        { id: 'atendimento',   label: 'Atendimento' },
+        { id: 'financeiro',    label: 'Financeiro' },
+        { id: 'estoque',       label: 'Estoque' },
+        { id: 'relatorios',    label: 'Relatórios' },
+        { id: 'protocolos',    label: 'Protocolos' },
+        { id: 'servicos',      label: 'Serviços' },
+        { id: 'cupons',        label: 'Cupons/Clube' },
+        { id: 'auditoria',     label: 'Auditoria' },
+        { id: 'usuarios',      label: 'Usuários' },
+    ];
+    const STATIC = [
+        { key: 'ADMIN',          label: 'Administrador' },
+        { key: 'SECRETARIA',     label: 'Secretaria' },
+        { key: 'FISIOTERAPEUTA', label: 'Fisioterapeuta' },
+        { key: 'FUNCIONARIO',    label: 'Funcionário' },
+    ];
+
+    let customs = [];
+    try {
+        const r = await fetch('/api/profiles.php');
+        const d = await r.json();
+        if (d.ok) customs = d.profiles || [];
+    } catch(_) {}
+    _loadProfilesIntoSelect();
+
+    const chk = v => v
+        ? '<span style="color:#059669;font-size:16px;">✓</span>'
+        : '<span style="color:#d1d5db;font-size:16px;">—</span>';
+
+    const thStatic = STATIC.map(r =>
+        `<th class="px-4 py-3 text-gray-600 font-medium text-xs uppercase tracking-wider">${r.label}</th>`
+    ).join('');
+
+    const thCustom = customs.map(p =>
+        `<th class="px-4 py-3 text-xs uppercase tracking-wider" style="color:#262261;">` +
+        escapeHtml(p.nome) +
+        `<div class="flex gap-1 justify-center mt-1">` +
+        `<button onclick="editPerfil(${p.id})" title="Editar" style="color:#262261;background:none;border:none;cursor:pointer;font-size:11px;"><i class="fa-solid fa-pen-to-square"></i></button>` +
+        `<button onclick="deletePerfil(${p.id})" title="Excluir" style="color:#ef4444;background:none;border:none;cursor:pointer;font-size:11px;"><i class="fa-solid fa-trash"></i></button>` +
+        `</div></th>`
+    ).join('');
+
+    const thNew =
+        `<th class="px-4 py-3">` +
+        `<button onclick="openModalNovoPerfil()" ` +
+        `style="padding:5px 12px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;color:#262261;font-size:12px;font-weight:600;white-space:nowrap;">` +
+        `<i class="fa-solid fa-plus mr-1"></i>Novo</button></th>`;
+
+    const trows = MODS.map(m => {
+        const sc = STATIC.map(r => {
+            const p = ROLE_PERMISSIONS[r.key] || { sections: [] };
+            return `<td class="px-4 py-2">${chk(p.sections.includes(m.id))}</td>`;
+        }).join('');
+        const cc = customs.map(p =>
+            `<td class="px-4 py-2">${chk(((p.permissions && p.permissions.sections) || []).includes(m.id))}</td>`
+        ).join('');
+        return `<tr class="hover:bg-gray-50">` +
+            `<td class="px-4 py-2 text-left text-gray-700 font-medium">${m.label}</td>` +
+            `${sc}${cc}<td></td></tr>`;
+    }).join('');
+
+    container.innerHTML =
+        `<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">` +
+        `<h3 class="font-semibold text-gray-700 mb-4 flex items-center gap-2">` +
+        `<i class="fa-solid fa-lock text-[#00d4b8]"></i> Permissões por Perfil</h3>` +
+        `<div class="overflow-x-auto">` +
+        `<table class="w-full text-sm text-center"><thead>` +
+        `<tr class="bg-gray-50">` +
+        `<th class="px-4 py-3 text-left text-gray-600 font-medium text-xs uppercase tracking-wider">Módulo</th>` +
+        `${thStatic}${thCustom}${thNew}` +
+        `</tr></thead>` +
+        `<tbody class="divide-y divide-gray-100">${trows}</tbody>` +
+        `</table></div></div>`;
+}
 
 async function renderPerfis() {
     const container = document.getElementById('perfis-list');
@@ -659,6 +744,7 @@ async function savePerfil(e) {
         if (!data.ok) throw new Error(data.error);
         closeModal('modal-perfil');
         renderPerfis();
+        renderPerfilMatrix();
         showToast(id ? 'Perfil atualizado!' : 'Perfil criado!');
     } catch(e) { showToast('Erro: ' + e.message, 'error'); }
 }
@@ -670,6 +756,7 @@ async function deletePerfil(id) {
         const data = await res.json();
         if (!data.ok) throw new Error(data.error);
         renderPerfis();
+        renderPerfilMatrix();
         showToast('Perfil removido.');
     } catch(e) { showToast('Erro: ' + e.message, 'error'); }
 }
@@ -4022,7 +4109,7 @@ window.showSection = function(id) {
     if (id === "pacientes" && typeof renderPacientes === "function") renderPacientes();
     if (id === "agenda" && typeof renderCalendar === "function") renderCalendar();
     if (id === "servicos" && typeof renderServicos === "function") renderServicos();
-    if (id === "usuarios" && typeof renderUsuarios === "function") renderUsuarios();
+    if (id === "usuarios" && typeof renderUsuarios === "function") { renderUsuarios(); renderPerfilMatrix(); }
     if (id === "financeiro" && typeof renderFinancialReport === "function") setTimeout(renderFinancialReport, 30);
     if (id === "cupons") renderCouponsSection();
     if (id === "recompensas-admin" && typeof loadRewardsAdminSection === "function") {

@@ -1121,47 +1121,7 @@
         <!-- Lista de usuários -->
         <div id="painel-usuarios">
 
-        <!-- Tabela de perfis por módulo (referência) -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
-            <h3 class="font-semibold text-gray-700 mb-4 flex items-center gap-2"><i class="fa-solid fa-lock text-[#00d4b8]"></i> Permissões por Perfil</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-center">
-                    <thead>
-                        <tr class="bg-gray-50">
-                            <th class="px-4 py-3 text-left text-gray-600 font-medium">Módulo</th>
-                            <th class="px-4 py-3 text-gray-600 font-medium">Administrador</th>
-                            <th class="px-4 py-3 text-gray-600 font-medium">Secretaria</th>
-                            <th class="px-4 py-3 text-gray-600 font-medium">Fisioterapeuta</th>
-                            <th class="px-4 py-3 text-gray-600 font-medium">Funcionário</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100" id="perm-matrix-body">
-                        <script>
-                        (function(){
-                            const rows = [
-                                ['Dashboard',       true, false, true,  false],
-                                ['Pacientes',       true, true,  true,  false],
-                                ['Agenda',          true, true,  true,  false],
-                                ['Atendimento',     true, true,  true,  false],
-                                ['Financeiro',      true, false, false, false],
-                                ['Estoque',         true, false, true,  false],
-                                ['Relatórios',      true, false, false, false],
-                                ['Protocolos',      true, true,  true,  false],
-                                ['Serviços',        true, true,  true,  false],
-                                ['Cupons/Clube',    true, true,  false, false],
-                                ['Auditoria',       true, false, false, false],
-                                ['Usuários',        true, false, false, false],
-                            ];
-                            const check = (v) => v ? '<span style="color:#059669;font-size:16px;">✓</span>' : '<span style="color:#d1d5db;font-size:16px;">—</span>';
-                            document.getElementById('perm-matrix-body').innerHTML = rows.map(r =>
-                                `<tr class="hover:bg-gray-50"><td class="px-4 py-2 text-left text-gray-700 font-medium">${r[0]}</td>${[r[1],r[2],r[3],r[4]].map(v=>`<td class="px-4 py-2">${check(v)}</td>`).join('')}</tr>`
-                            ).join('');
-                        })();
-                        </script>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <div id="perm-matrix-container"></div>
 
         <!-- Lista de usuários -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -1181,19 +1141,6 @@
             </table>
         </div>
 
-        <!-- Perfis customizados -->
-        <div class="mt-8">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="font-semibold text-gray-700 flex items-center gap-2">
-                    <i class="fa-solid fa-id-badge text-[#00d4b8]"></i> Perfis Customizados
-                </h3>
-                <button onclick="openModalNovoPerfil()"
-                    style="background:#f1f5f9;color:#262261;border:1px solid #e2e8f0;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">
-                    <i class="fa-solid fa-plus"></i> Novo Perfil
-                </button>
-            </div>
-            <div id="perfis-list" class="space-y-2"></div>
-        </div>
 
     </section>
 
