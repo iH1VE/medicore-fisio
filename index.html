@@ -1118,19 +1118,7 @@
             </button>
         </div>
 
-        <!-- Tabs -->
-        <div class="flex gap-2 mb-6" id="usuarios-tabs">
-            <button id="tab-usuarios-btn" onclick="switchUsuariosTab('usuarios')"
-                style="padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:14px;font-weight:600;background:#262261;color:#fff;">
-                <i class="fa-solid fa-users mr-2"></i>Usuários
-            </button>
-            <button id="tab-perfis-btn" onclick="switchUsuariosTab('perfis')"
-                style="padding:8px 20px;border-radius:8px;border:none;cursor:pointer;font-size:14px;font-weight:600;background:#f1f5f9;color:#64748b;">
-                <i class="fa-solid fa-id-badge mr-2"></i>Perfis
-            </button>
-        </div>
-
-        <!-- Painel Usuários -->
+        <!-- Lista de usuários -->
         <div id="painel-usuarios">
 
         <!-- Tabela de perfis por módulo (referência) -->
@@ -1192,6 +1180,21 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Perfis customizados -->
+        <div class="mt-8">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-semibold text-gray-700 flex items-center gap-2">
+                    <i class="fa-solid fa-id-badge text-[#00d4b8]"></i> Perfis Customizados
+                </h3>
+                <button onclick="openModalNovoPerfil()"
+                    style="background:#f1f5f9;color:#262261;border:1px solid #e2e8f0;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                    <i class="fa-solid fa-plus"></i> Novo Perfil
+                </button>
+            </div>
+            <div id="perfis-list" class="space-y-2"></div>
+        </div>
+
     </section>
 
 </main>
@@ -1217,13 +1220,19 @@
             </div>
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Perfil *</label>
-                <select id="usuario-tipo" required
-                    style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;background:#fff;box-sizing:border-box;">
-                    <option value="SECRETARIA">Secretaria / Recepção</option>
-                    <option value="FISIOTERAPEUTA">Fisioterapeuta</option>
-                    <option value="FUNCIONARIO">Funcionário</option>
-                    <option value="ADMIN">Administrador</option>
-                </select>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <select id="usuario-tipo" required
+                        style="flex:1;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;background:#fff;">
+                        <option value="SECRETARIA">Secretaria / Recepção</option>
+                        <option value="FISIOTERAPEUTA">Fisioterapeuta</option>
+                        <option value="FUNCIONARIO">Funcionário</option>
+                        <option value="ADMIN">Administrador</option>
+                    </select>
+                    <button type="button" onclick="openModalNovoPerfil()" title="Criar novo perfil"
+                        style="padding:10px 14px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;color:#262261;font-size:16px;flex-shrink:0;">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
             </div>
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
@@ -1250,11 +1259,12 @@
 </div>
 
 
+
 <!-- MODAL PERFIL -->
 <div id="modal-perfil" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm" onclick="if(event.target===this)closeModal('modal-perfil')">
-    <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;position:relative;">
-        <button onclick="closeModal('modal-perfil')" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;">&times;</button>
-        <h3 class="text-xl font-bold mb-5" style="color:#262261;">Configurar Perfil</h3>
+    <div style="background:#fff;border-radius:16px;padding:28px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative;">
+        <button onclick="closeModal('modal-perfil')" style="position:absolute;top:14px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;">&times;</button>
+        <h3 class="text-xl font-bold mb-5" style="color:#262261;"><i class="fa-solid fa-id-badge mr-2 text-[#00d4b8]"></i>Configurar Perfil</h3>
         <form id="form-perfil" onsubmit="savePerfil(event)">
             <input type="hidden" id="perfil-edit-id">
             <div class="mb-4">
@@ -1263,95 +1273,95 @@
                     style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;box-sizing:border-box;">
             </div>
             <div class="mb-5">
-                <p class="text-sm font-medium text-gray-700 mb-3">Permissões por módulo</p>
-                <div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-50">
+                <p class="text-xs text-gray-400 mb-2">Clique nos botões para alternar entre ✓ (permitido) e — (negado)</p>
+                <div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;">
+                    <table style="width:100%;border-collapse:collapse;">
+                        <thead style="background:#f8fafc;">
                             <tr>
-                                <th class="py-2 pr-4 text-left pl-3 text-gray-600 font-medium">Módulo</th>
-                                <th class="py-2 text-center text-gray-600 font-medium w-16">Ver</th>
-                                <th class="py-2 text-center text-gray-600 font-medium w-16">Editar</th>
-                                <th class="py-2 text-center text-gray-600 font-medium w-16">Excluir</th>
+                                <th style="padding:8px 12px;text-align:left;font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Módulo</th>
+                                <th style="padding:8px;text-align:center;font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;">Ver</th>
+                                <th style="padding:8px;text-align:center;font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;">Editar</th>
+                                <th style="padding:8px;text-align:center;font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;">Excluir</th>
                             </tr>
                         </thead>
-                        <tbody class="px-3">
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Dashboard</td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-dashboard" onchange="onPermChange('dashboard')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
-                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
+                        <tbody>
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:8px 12px;font-size:13px;color:#374151;font-weight:500;">Dashboard</td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-view-dashboard" onclick="togglePerm('dashboard','view')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><span style="color:#e2e8f0;font-size:18px;">—</span></td>
+                            <td style="padding:8px;text-align:center;"><span style="color:#e2e8f0;font-size:18px;">—</span></td>
                         </tr>
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Pacientes</td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-pacientes" onchange="onPermChange('pacientes')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-pacientes" onchange="onPermChange('pacientes')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-delete-pacientes" onchange="onPermChange('pacientes')" class="w-4 h-4"></td>
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:8px 12px;font-size:13px;color:#374151;font-weight:500;">Pacientes</td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-view-pacientes" onclick="togglePerm('pacientes','view')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-edit-pacientes" onclick="togglePerm('pacientes','edit')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-delete-pacientes" onclick="togglePerm('pacientes','delete')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
                         </tr>
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Agenda</td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-agenda" onchange="onPermChange('agenda')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-agenda" onchange="onPermChange('agenda')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-delete-agenda" onchange="onPermChange('agenda')" class="w-4 h-4"></td>
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:8px 12px;font-size:13px;color:#374151;font-weight:500;">Agenda</td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-view-agenda" onclick="togglePerm('agenda','view')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-edit-agenda" onclick="togglePerm('agenda','edit')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-delete-agenda" onclick="togglePerm('agenda','delete')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
                         </tr>
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Atendimento</td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-atendimento" onchange="onPermChange('atendimento')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-atendimento" onchange="onPermChange('atendimento')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:8px 12px;font-size:13px;color:#374151;font-weight:500;">Atendimento</td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-view-atendimento" onclick="togglePerm('atendimento','view')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-edit-atendimento" onclick="togglePerm('atendimento','edit')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><span style="color:#e2e8f0;font-size:18px;">—</span></td>
                         </tr>
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Financeiro</td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-financeiro" onchange="onPermChange('financeiro')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-financeiro" onchange="onPermChange('financeiro')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-delete-financeiro" onchange="onPermChange('financeiro')" class="w-4 h-4"></td>
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:8px 12px;font-size:13px;color:#374151;font-weight:500;">Financeiro</td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-view-financeiro" onclick="togglePerm('financeiro','view')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-edit-financeiro" onclick="togglePerm('financeiro','edit')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-delete-financeiro" onclick="togglePerm('financeiro','delete')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
                         </tr>
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Estoque</td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-estoque" onchange="onPermChange('estoque')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-estoque" onchange="onPermChange('estoque')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-delete-estoque" onchange="onPermChange('estoque')" class="w-4 h-4"></td>
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:8px 12px;font-size:13px;color:#374151;font-weight:500;">Estoque</td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-view-estoque" onclick="togglePerm('estoque','view')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-edit-estoque" onclick="togglePerm('estoque','edit')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-delete-estoque" onclick="togglePerm('estoque','delete')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
                         </tr>
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Relatórios</td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-relatorios" onchange="onPermChange('relatorios')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
-                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:8px 12px;font-size:13px;color:#374151;font-weight:500;">Relatórios</td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-view-relatorios" onclick="togglePerm('relatorios','view')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><span style="color:#e2e8f0;font-size:18px;">—</span></td>
+                            <td style="padding:8px;text-align:center;"><span style="color:#e2e8f0;font-size:18px;">—</span></td>
                         </tr>
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Protocolos</td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-protocolos" onchange="onPermChange('protocolos')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-protocolos" onchange="onPermChange('protocolos')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-delete-protocolos" onchange="onPermChange('protocolos')" class="w-4 h-4"></td>
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:8px 12px;font-size:13px;color:#374151;font-weight:500;">Protocolos</td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-view-protocolos" onclick="togglePerm('protocolos','view')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-edit-protocolos" onclick="togglePerm('protocolos','edit')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-delete-protocolos" onclick="togglePerm('protocolos','delete')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
                         </tr>
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Serviços</td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-servicos" onchange="onPermChange('servicos')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-servicos" onchange="onPermChange('servicos')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-delete-servicos" onchange="onPermChange('servicos')" class="w-4 h-4"></td>
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:8px 12px;font-size:13px;color:#374151;font-weight:500;">Serviços</td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-view-servicos" onclick="togglePerm('servicos','view')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-edit-servicos" onclick="togglePerm('servicos','edit')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-delete-servicos" onclick="togglePerm('servicos','delete')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
                         </tr>
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Cupons</td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-cupons" onchange="onPermChange('cupons')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-cupons" onchange="onPermChange('cupons')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-delete-cupons" onchange="onPermChange('cupons')" class="w-4 h-4"></td>
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:8px 12px;font-size:13px;color:#374151;font-weight:500;">Cupons</td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-view-cupons" onclick="togglePerm('cupons','view')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-edit-cupons" onclick="togglePerm('cupons','edit')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-delete-cupons" onclick="togglePerm('cupons','delete')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
                         </tr>
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Recompensas</td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-recompensas-admin" onchange="onPermChange('recompensas-admin')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-recompensas-admin" onchange="onPermChange('recompensas-admin')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:8px 12px;font-size:13px;color:#374151;font-weight:500;">Recompensas</td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-view-recompensas-admin" onclick="togglePerm('recompensas-admin','view')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-edit-recompensas-admin" onclick="togglePerm('recompensas-admin','edit')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><span style="color:#e2e8f0;font-size:18px;">—</span></td>
                         </tr>
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Resgates</td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-resgates-admin" onchange="onPermChange('resgates-admin')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-edit-resgates-admin" onchange="onPermChange('resgates-admin')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:8px 12px;font-size:13px;color:#374151;font-weight:500;">Resgates</td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-view-resgates-admin" onclick="togglePerm('resgates-admin','view')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-edit-resgates-admin" onclick="togglePerm('resgates-admin','edit')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><span style="color:#e2e8f0;font-size:18px;">—</span></td>
                         </tr>
-                        <tr class="border-b border-gray-100 hover:bg-gray-50">
-                            <td class="py-2 pr-4 text-sm text-gray-700 font-medium">Auditoria</td>
-                            <td class="py-2 text-center"><input type="checkbox" id="perm-view-auditoria" onchange="onPermChange('auditoria')" class="w-4 h-4"></td>
-                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
-                            <td class="py-2 text-center"><span class="text-gray-200">—</span></td>
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:8px 12px;font-size:13px;color:#374151;font-weight:500;">Auditoria</td>
+                            <td style="padding:8px;text-align:center;"><button type="button" id="perm-view-auditoria" onclick="togglePerm('auditoria','view')" style="width:36px;height:28px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700;" data-val="0">—</button></td>
+                            <td style="padding:8px;text-align:center;"><span style="color:#e2e8f0;font-size:18px;">—</span></td>
+                            <td style="padding:8px;text-align:center;"><span style="color:#e2e8f0;font-size:18px;">—</span></td>
                         </tr>
                         </tbody>
                     </table>

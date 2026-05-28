@@ -608,13 +608,19 @@ function openModalNovoPerfil(prefill = null) {
     document.getElementById('perfil-edit-id').value = prefill?.id || '';
     document.getElementById('perfil-nome').value    = prefill?.nome || '';
     const perms = prefill?.permissions || {};
+    const setBtn = (id, on) => {
+        const b = document.getElementById(id);
+        if (!b) return;
+        b.dataset.val   = on ? '1' : '0';
+        b.textContent   = on ? '✓' : '—';
+        b.style.background  = on ? '#d1fae5' : '#f8fafc';
+        b.style.color        = on ? '#059669' : '#94a3b8';
+        b.style.borderColor  = on ? '#6ee7b7' : '#e2e8f0';
+    };
     PERM_MODULES.forEach(m => {
-        const v = document.getElementById('perm-view-' + m.id);
-        const e = document.getElementById('perm-edit-' + m.id);
-        const d = document.getElementById('perm-delete-' + m.id);
-        if (v) v.checked = (perms.sections || []).includes(m.id);
-        if (e) e.checked = (perms.edit || []).includes(m.id);
-        if (d) d.checked = (perms.delete || []).includes(m.id);
+        setBtn('perm-view-'   + m.id, (perms.sections || []).includes(m.id));
+        setBtn('perm-edit-'   + m.id, (perms.edit     || []).includes(m.id));
+        setBtn('perm-delete-' + m.id, (perms.delete   || []).includes(m.id));
     });
     openModal('modal-perfil');
 }
@@ -635,10 +641,10 @@ async function savePerfil(e) {
     if (!nome) return;
     const sections = [], edit = [], del = [];
     PERM_MODULES.forEach(m => {
-        const v = document.getElementById('perm-view-' + m.id)?.checked;
-        const ed = document.getElementById('perm-edit-' + m.id)?.checked;
-        const d = document.getElementById('perm-delete-' + m.id)?.checked;
-        if (v) sections.push(m.id);
+        const v  = document.getElementById('perm-view-'   + m.id)?.dataset.val === '1';
+        const ed = document.getElementById('perm-edit-'   + m.id)?.dataset.val === '1';
+        const d  = document.getElementById('perm-delete-' + m.id)?.dataset.val === '1';
+        if (v)       sections.push(m.id);
         if (v && ed) edit.push(m.id);
         if (v && ed && d) del.push(m.id);
     });
@@ -669,6 +675,35 @@ async function deletePerfil(id) {
 }
 
 // Garante que edit só fica ativo se view estiver ativo, e delete só se edit
+
+function togglePerm(moduleId, col) {
+    const btn = document.getElementById('perm-' + col + '-' + moduleId);
+    if (!btn) return;
+    const isOn = btn.dataset.val === '1';
+    const setBtn = (b, on) => {
+        if (!b) return;
+        b.dataset.val = on ? '1' : '0';
+        b.textContent = on ? '✓' : '—';
+        b.style.background  = on ? '#d1fae5' : '#f8fafc';
+        b.style.color        = on ? '#059669' : '#94a3b8';
+        b.style.borderColor  = on ? '#6ee7b7' : '#e2e8f0';
+    };
+    const v = document.getElementById('perm-view-'   + moduleId);
+    const e = document.getElementById('perm-edit-'   + moduleId);
+    const d = document.getElementById('perm-delete-' + moduleId);
+    if (col === 'view') {
+        setBtn(v, !isOn);
+        if (isOn) { setBtn(e, false); setBtn(d, false); }
+    } else if (col === 'edit') {
+        if (!isOn) setBtn(v, true);
+        setBtn(e, !isOn);
+        if (isOn) setBtn(d, false);
+    } else if (col === 'delete') {
+        if (!isOn) { setBtn(v, true); setBtn(e, true); }
+        setBtn(d, !isOn);
+    }
+}
+
 function onPermChange(moduleId) {
     const v = document.getElementById('perm-view-' + moduleId);
     const e = document.getElementById('perm-edit-' + moduleId);
