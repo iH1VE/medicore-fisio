@@ -130,6 +130,66 @@ function buildFinancialEntries() {
 // STATE
 // ============================================
 let currentUserRole = null;
+
+const ROLE_PERMISSIONS = {
+    ADMIN: {
+        sections: ['dashboard','estrategia','pacientes','agenda','atendimento',
+                   'financeiro','estoque','relatorios','protocolos','servicos',
+                   'cupons','recompensas-admin','resgates-admin','auditoria','usuarios'],
+        edit:     ['pacientes','agenda','atendimento','financeiro','estoque',
+                   'protocolos','servicos','cupons','recompensas-admin','resgates-admin'],
+        delete:   ['pacientes','financeiro','estoque','protocolos','servicos','cupons']
+    },
+    SECRETARIA: {
+        sections: ['pacientes','agenda','atendimento','protocolos','servicos',
+                   'cupons','recompensas-admin','resgates-admin'],
+        edit:     ['pacientes','agenda','atendimento','cupons','resgates-admin'],
+        delete:   []
+    },
+    FISIOTERAPEUTA: {
+        sections: ['dashboard','pacientes','agenda','atendimento','estoque',
+                   'protocolos','servicos'],
+        edit:     ['agenda','atendimento','pacientes'],
+        delete:   []
+    },
+    FUNCIONARIO: {
+        sections: ['pacientes','agenda','atendimento'],
+        edit:     ['agenda','atendimento'],
+        delete:   []
+    }
+};
+
+function canAccess(sectionId) {
+    if (!currentUserRole) return false;
+    const perms = ROLE_PERMISSIONS[currentUserRole];
+    return perms ? perms.sections.includes(sectionId) : false;
+}
+function canEdit(module) {
+    if (!currentUserRole) return false;
+    const perms = ROLE_PERMISSIONS[currentUserRole];
+    return perms ? perms.edit.includes(module) : false;
+}
+function canDelete(module) {
+    if (!currentUserRole) return false;
+    const perms = ROLE_PERMISSIONS[currentUserRole];
+    return perms ? perms.delete.includes(module) : false;
+}
+function getRoleLabel(tipo) {
+    const l = { ADMIN: 'Administrador', SECRETARIA: 'Secretaria',
+                FISIOTERAPEUTA: 'Fisioterapeuta', FUNCIONARIO: 'Funcionário' };
+    return l[tipo] || tipo;
+}
+function updateNavVisibility() {
+    const perms = ROLE_PERMISSIONS[currentUserRole] || { sections: [] };
+    document.querySelectorAll('.nav-link[onclick]').forEach(btn => {
+        const m = (btn.getAttribute('onclick') || '').match(/showSection\(['"]([\w-]+)['"]/);
+        if (m) btn.style.display = perms.sections.includes(m[1]) ? '' : 'none';
+    });
+}
+function getDefaultSection(role) {
+    return { ADMIN: 'dashboard', SECRETARIA: 'agenda',
+             FISIOTERAPEUTA: 'dashboard', FUNCIONARIO: 'pacientes' }[role] || 'dashboard';
+}
 let calendarDate = new Date();
 let currentConsultationId = null;
 let currentQuickPatientId = null;
@@ -350,6 +410,106 @@ async function apiLoadResources() {
 // ============================================
 // CORE FUNCTIONS
 // ============================================
+
+
+// ============================================
+// GESTÃO DE USUÁRIOS (admin only)
+// ============================================
+
+async function renderUsuarios() {
+    const tbody = document.getElementById('usuarios-list');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">Carregando...</td></tr>';
+    try {
+        const res = await fetch('/api/users.php');
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error);
+        const tipoColor = { ADMIN: '#262261', SECRETARIA: '#00d4b8', FISIOTERAPEUTA: '#10b981', FUNCIONARIO: '#64748b' };
+        tbody.innerHTML = data.users.map(u => `
+            <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
+                <td class="px-6 py-4 font-medium text-gray-800">${escapeHtml(u.nome)}</td>
+                <td class="px-6 py-4 text-gray-600 text-sm">${escapeHtml(u.email)}</td>
+                <td class="px-6 py-4">
+                    <span style="background:${tipoColor[u.tipo]||'#64748b'}22;color:${tipoColor[u.tipo]||'#64748b'};padding:3px 12px;border-radius:100px;font-size:12px;font-weight:600;">${getRoleLabel(u.tipo)}</span>
+                </td>
+                <td class="px-6 py-4">
+                    <span style="background:${u.ativo==1?'#d1fae5':'#fee2e2'};color:${u.ativo==1?'#059669':'#dc2626'};padding:3px 10px;border-radius:100px;font-size:12px;font-weight:600;">${u.ativo==1?'Ativo':'Inativo'}</span>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex gap-3">
+                        <button onclick="editUsuario(${u.id})" title="Editar" style="color:#262261;background:none;border:none;cursor:pointer;font-size:15px;"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteUsuario(${u.id})" title="Excluir" style="color:#ef4444;background:none;border:none;cursor:pointer;font-size:15px;"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('') || '<tr><td colspan="5" class="px-6 py-8 text-center text-gray-400">Nenhum usuário cadastrado.</td></tr>';
+    } catch(e) {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-red-400">Erro: ${e.message}</td></tr>`;
+    }
+}
+
+function openModalNovoUsuario() {
+    document.getElementById('form-usuario').reset();
+    document.getElementById('usuario-edit-id').value = '';
+    document.getElementById('modal-usuario-title').textContent = 'Novo Usuário';
+    document.getElementById('usuario-senha-hint').textContent = 'Obrigatória para novo usuário';
+    document.getElementById('usuario-ativo').checked = true;
+    openModal('modal-usuario');
+}
+
+async function editUsuario(id) {
+    try {
+        const res  = await fetch('/api/users.php');
+        const data = await res.json();
+        const u = (data.users || []).find(x => x.id == id);
+        if (!u) return;
+        document.getElementById('usuario-edit-id').value = u.id;
+        document.getElementById('usuario-nome').value    = u.nome;
+        document.getElementById('usuario-email').value   = u.email;
+        document.getElementById('usuario-tipo').value    = u.tipo;
+        document.getElementById('usuario-ativo').checked = u.ativo == 1;
+        document.getElementById('usuario-senha').value   = '';
+        document.getElementById('modal-usuario-title').textContent = 'Editar Usuário';
+        document.getElementById('usuario-senha-hint').textContent  = 'Deixe em branco para manter a senha atual';
+        openModal('modal-usuario');
+    } catch(e) { showToast('Erro ao carregar usuário', 'error'); }
+}
+
+async function saveUsuario(e) {
+    e.preventDefault();
+    const id    = document.getElementById('usuario-edit-id').value;
+    const nome  = document.getElementById('usuario-nome').value.trim();
+    const email = document.getElementById('usuario-email').value.trim();
+    const tipo  = document.getElementById('usuario-tipo').value;
+    const senha = document.getElementById('usuario-senha').value;
+    const ativo = document.getElementById('usuario-ativo').checked ? 1 : 0;
+    const payload = { nome, email, tipo, ativo };
+    if (id) payload.id = parseInt(id);
+    if (senha) payload.senha = senha;
+    try {
+        const res  = await fetch('/api/users.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error);
+        closeModal('modal-usuario');
+        renderUsuarios();
+        showToast(id ? 'Usuário atualizado!' : 'Usuário criado!');
+    } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
+
+async function deleteUsuario(id) {
+    if (!confirm('Excluir este usuário?')) return;
+    try {
+        const res  = await fetch('/api/users.php?id=' + id, { method: 'DELETE' });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error);
+        renderUsuarios();
+        showToast('Usuário removido.');
+    } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+}
 
 function checkAlerts() {
     const badge = document.getElementById('alert-badge');
@@ -578,7 +738,7 @@ window.login = async function () {
         const _hNome = document.getElementById("header-user-nome");
         const _hTipo = document.getElementById("header-user-tipo");
         if (_hNome) _hNome.textContent = data.user.nome;
-        if (_hTipo) _hTipo.textContent = data.user.tipo === "ADMIN" ? "Administrador" : data.user.tipo === "SECRETARIA" ? "Secretaria" : "Funcionário";
+        if (_hTipo) _hTipo.textContent = getRoleLabel(data.user.tipo);
 
         updateNavVisibility();
         showSection(getDefaultSection(data.user.tipo));
@@ -609,6 +769,7 @@ function getSectionTitle(id) {
         'financeiro': 'Financeiro',
         'relatorios': 'Relatórios',
         'auditoria': 'Auditoria',
+        'usuarios': 'Usuários',
         'servicos': 'Serviços'
     };
     return titles[id] || id.charAt(0).toUpperCase() + id.slice(1);
@@ -2831,6 +2992,7 @@ function getFilteredFinancialEntries(entries = buildFinancialEntries()) {
 }
 
 function canEditFinancialEntry(entry) {
+    if (!canEdit('financeiro')) return false;
     return !!entry.manual && !entry.estoqueItemId && !String(entry.id || '').startsWith('stock_');
 }
 
@@ -3660,6 +3822,7 @@ window.showSection = function(id) {
     if (id === "pacientes" && typeof renderPacientes === "function") renderPacientes();
     if (id === "agenda" && typeof renderCalendar === "function") renderCalendar();
     if (id === "servicos" && typeof renderServicos === "function") renderServicos();
+    if (id === "usuarios" && typeof renderUsuarios === "function") renderUsuarios();
     if (id === "financeiro" && typeof renderFinancialReport === "function") setTimeout(renderFinancialReport, 30);
     if (id === "cupons") renderCouponsSection();
     if (id === "recompensas-admin" && typeof loadRewardsAdminSection === "function") {
@@ -3733,7 +3896,7 @@ window.onload = async function() {
             const _hNomeR = document.getElementById("header-user-nome");
             const _hTipoR = document.getElementById("header-user-tipo");
             if (_hNomeR) _hNomeR.textContent = user.nome;
-            if (_hTipoR) _hTipoR.textContent = user.tipo === "ADMIN" ? "Administrador" : user.tipo === "SECRETARIA" ? "Secretaria" : "Funcionário";
+            if (_hTipoR) _hTipoR.textContent = getRoleLabel(user.tipo);
 
             updateNavVisibility();
             if (typeof showSection === "function") {
