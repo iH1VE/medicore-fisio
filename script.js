@@ -580,24 +580,9 @@ window.login = async function () {
         if (_hNome) _hNome.textContent = data.user.nome;
         if (_hTipo) _hTipo.textContent = data.user.tipo === "ADMIN" ? "Administrador" : data.user.tipo === "SECRETARIA" ? "Secretaria" : "Funcionário";
 
-        if (data.user.tipo === "SECRETARIA") {
-            document.querySelectorAll('.nav-link').forEach(nav => {
-                const onClick = nav.getAttribute('onclick') || '';
-                if (
-                    !onClick.includes("'protocolos'") &&
-                    !onClick.includes("'pacientes'") &&
-                    !onClick.includes("'agenda'") &&
-                    !onClick.includes("'atendimento'") &&
-                    !onClick.includes("'resgates-admin'")
-                ) {
-                    nav.style.display = 'none';
-                }
-            });
-            showSection("agenda");
-        } else {
-            showSection("dashboard");
-            updateDashboard();
-        }
+        updateNavVisibility();
+        showSection(getDefaultSection(data.user.tipo));
+        if (data.user.tipo !== "SECRETARIA") updateDashboard();
         initVisualEnhancements();
         syncAdminRewardsNav();
         syncAdminCouponNav();
@@ -3750,30 +3735,14 @@ window.onload = async function() {
             if (_hNomeR) _hNomeR.textContent = user.nome;
             if (_hTipoR) _hTipoR.textContent = user.tipo === "ADMIN" ? "Administrador" : user.tipo === "SECRETARIA" ? "Secretaria" : "Funcionário";
 
+            updateNavVisibility();
             if (typeof showSection === "function") {
-                if (user.tipo === "SECRETARIA") {
-                    document.querySelectorAll('.nav-link').forEach(nav => {
-                        const onClick = nav.getAttribute('onclick') || '';
-                        if (
-                            !onClick.includes("'protocolos'") &&
-                            !onClick.includes("'pacientes'") &&
-                            !onClick.includes("'agenda'") &&
-                            !onClick.includes("'atendimento'") &&
-                            !onClick.includes("'resgates-admin'")
-                        ) {
-                            nav.style.display = 'none';
-                        }
-                    });
-                    showSection("agenda");
-                } else {
-                    showSection("dashboard");
-                }
+                showSection(getDefaultSection(user.tipo));
             } else {
-                const targetId = user.tipo === "SECRETARIA" ? "agenda" : "dashboard";
-                const target = document.getElementById(targetId);
-                if (target) {
+                const _tgt = document.getElementById(getDefaultSection(user.tipo));
+                if (_tgt) {
                     document.querySelectorAll("main > section").forEach(s => s.classList.add("hidden"));
-                    target.classList.remove("hidden");
+                    _tgt.classList.remove("hidden");
                 }
             }
 
