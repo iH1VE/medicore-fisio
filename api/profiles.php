@@ -48,7 +48,7 @@ if ($method === 'POST') {
         $stmt = $conn->prepare("UPDATE profiles SET nome=?, permissions=? WHERE id=?");
         $stmt->bind_param('ssi', $nome, $permJson, $id);
     } else {
-        $stmt = $conn->prepare("INSERT INTO profiles (nome, permissions) VALUES (?, ?)");
+        $stmt = $conn->prepare("INSERT INTO profiles (nome, permissions) VALUES (?, ?) ON DUPLICATE KEY UPDATE permissions=VALUES(permissions)");
         $stmt->bind_param('ss', $nome, $permJson);
     }
     if (!$stmt->execute()) {

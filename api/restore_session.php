@@ -19,11 +19,10 @@ $_SESSION['user_email'] = $user['email'];
 $_SESSION['user_tipo']  = strtoupper($user['tipo']);
 
 // Resolve permissões: perfil padrão ou customizado
-$builtIn     = ['ADMIN', 'SECRETARIA', 'FISIOTERAPEUTA', 'FUNCIONARIO'];
 $tipo        = strtoupper($user['tipo']);
 $permissions = null;
 
-if (!in_array($tipo, $builtIn)) {
+if ($tipo !== 'ADMIN') {
     $pStmt = $conn->prepare("SELECT permissions FROM profiles WHERE nome = ? LIMIT 1");
     if ($pStmt) {
         $pStmt->bind_param('s', $user['tipo']);
@@ -32,7 +31,7 @@ if (!in_array($tipo, $builtIn)) {
         if ($pRow) {
             $permissions = json_decode($pRow['permissions'], true);
             $_SESSION['user_permissions'] = $pRow['permissions'];
-        } else {
+        } elseif (!in_array($tipo, ['ADMIN','SECRETARIA','FISIOTERAPEUTA','FUNCIONARIO'])) {
             $tipo = 'FUNCIONARIO';
             $_SESSION['user_tipo'] = 'FUNCIONARIO';
         }

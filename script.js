@@ -417,6 +417,14 @@ async function apiLoadResources() {
 // GESTÃO DE USUÁRIOS (admin only)
 // ============================================
 
+function _userActions(u) {
+    if (u.email.toLowerCase() === 'admin@admin.com') {
+        return '<span title="Usuário protegido" style="color:#94a3b8;font-size:13px;"><i class="fa-solid fa-lock"></i></span>';
+    }
+    return `<button onclick="editUsuario(${u.id})" title="Editar" style="color:#262261;background:none;border:none;cursor:pointer;font-size:15px;"><i class="fa-solid fa-pen-to-square"></i></button>`
+         + `<button onclick="deleteUsuario(${u.id})" title="Excluir" style="color:#ef4444;background:none;border:none;cursor:pointer;font-size:15px;"><i class="fa-solid fa-trash"></i></button>`;
+}
+
 async function renderUsuarios() {
     const tbody = document.getElementById('usuarios-list');
     if (!tbody) return;
@@ -438,8 +446,7 @@ async function renderUsuarios() {
                 </td>
                 <td class="px-6 py-4">
                     <div class="flex gap-3">
-                        <button onclick="editUsuario(${u.id})" title="Editar" style="color:#262261;background:none;border:none;cursor:pointer;font-size:15px;"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="deleteUsuario(${u.id})" title="Excluir" style="color:#ef4444;background:none;border:none;cursor:pointer;font-size:15px;"><i class="fa-solid fa-trash"></i></button>
+                        ${_userActions(u)}
                     </div>
                 </td>
             </tr>
@@ -635,6 +642,98 @@ async function renderPerfilMatrix() {
         `</table></div></div>`;
 }
 
+
+async function renderPerfilMatrix() {
+    const container = document.getElementById('perm-matrix-container');
+    if (!container) return;
+    const MODS = [
+        { id: 'dashboard',     label: 'Dashboard' },
+        { id: 'pacientes',     label: 'Pacientes' },
+        { id: 'agenda',        label: 'Agenda' },
+        { id: 'atendimento',   label: 'Atendimento' },
+        { id: 'financeiro',    label: 'Financeiro' },
+        { id: 'estoque',       label: 'Estoque' },
+        { id: 'relatorios',    label: 'Relatórios' },
+        { id: 'protocolos',    label: 'Protocolos' },
+        { id: 'servicos',      label: 'Serviços' },
+        { id: 'cupons',        label: 'Cupons/Clube' },
+        { id: 'auditoria',     label: 'Auditoria' },
+        { id: 'usuarios',      label: 'Usuários' },
+    ];
+    const STATIC = [
+        { key: 'ADMIN',          label: 'Administrador', editable: false },
+        { key: 'SECRETARIA',     label: 'Secretaria',    editable: true  },
+        { key: 'FISIOTERAPEUTA', label: 'Fisioterapeuta',editable: true  },
+        { key: 'FUNCIONARIO',    label: 'Funcionário',   editable: true  },
+    ];
+    let customs = [];
+    try {
+        const r = await fetch('/api/profiles.php');
+        const d = await r.json();
+        if (d.ok) {
+            customs = d.profiles || [];
+            // Aplica overrides de roles built-in armazenados no profiles
+            customs.forEach(p => {
+                if (ROLE_PERMISSIONS[p.nome.toUpperCase()]) {
+                    ROLE_PERMISSIONS[p.nome.toUpperCase()] = p.permissions;
+                }
+            });
+        }
+    } catch(_) {}
+    _loadProfilesIntoSelect();
+
+    const chk = v => v
+        ? '<span style="color:#059669;font-size:16px;">✓</span>'
+        : '<span style="color:#d1d5db;font-size:16px;">—</span>';
+
+    const thStatic = STATIC.map(r => {
+        const btn = r.editable
+            ? `<div class="flex gap-1 justify-center mt-1"><button onclick="editBuiltinRole('${r.key}')" title="Editar permissões" style="color:#64748b;background:none;border:none;cursor:pointer;font-size:11px;"><i class="fa-solid fa-pen-to-square"></i></button></div>`
+            : '';
+        return `<th class="px-4 py-3 text-gray-600 font-medium text-xs uppercase tracking-wider">${r.label}${btn}</th>`;
+    }).join('');
+
+    const onlyCustom = customs.filter(p => !ROLE_PERMISSIONS[p.nome.toUpperCase()]);
+
+    const thCustom = onlyCustom.map(p =>
+        `<th class="px-4 py-3 text-xs uppercase tracking-wider" style="color:#262261;">` +
+        escapeHtml(p.nome) +
+        `<div class="flex gap-1 justify-center mt-1">` +
+        `<button onclick="editPerfil(${p.id})" title="Editar" style="color:#262261;background:none;border:none;cursor:pointer;font-size:11px;"><i class="fa-solid fa-pen-to-square"></i></button>` +
+        `<button onclick="deletePerfil(${p.id})" title="Excluir" style="color:#ef4444;background:none;border:none;cursor:pointer;font-size:11px;"><i class="fa-solid fa-trash"></i></button>` +
+        `</div></th>`
+    ).join('');
+
+    const thNew =
+        `<th class="px-4 py-3"><button onclick="openModalNovoPerfil()" ` +
+        `style="padding:5px 12px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;color:#262261;font-size:12px;font-weight:600;white-space:nowrap;">` +
+        `<i class="fa-solid fa-plus mr-1"></i>Novo</button></th>`;
+
+    const trows = MODS.map(m => {
+        const sc = STATIC.map(r => {
+            const p = ROLE_PERMISSIONS[r.key] || { sections: [] };
+            return `<td class="px-4 py-2">${chk(p.sections.includes(m.id))}</td>`;
+        }).join('');
+        const cc = onlyCustom.map(p =>
+            `<td class="px-4 py-2">${chk(((p.permissions && p.permissions.sections) || []).includes(m.id))}</td>`
+        ).join('');
+        return `<tr class="hover:bg-gray-50"><td class="px-4 py-2 text-left text-gray-700 font-medium">${m.label}</td>${sc}${cc}<td></td></tr>`;
+    }).join('');
+
+    container.innerHTML =
+        `<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">` +
+        `<h3 class="font-semibold text-gray-700 mb-4 flex items-center gap-2"><i class="fa-solid fa-lock text-[#00d4b8]"></i> Permissões por Perfil</h3>` +
+        `<div class="overflow-x-auto"><table class="w-full text-sm text-center"><thead><tr class="bg-gray-50">` +
+        `<th class="px-4 py-3 text-left text-gray-600 font-medium text-xs uppercase tracking-wider">Módulo</th>` +
+        `${thStatic}${thCustom}${thNew}</tr></thead>` +
+        `<tbody class="divide-y divide-gray-100">${trows}</tbody></table></div></div>`;
+}
+
+function editBuiltinRole(key) {
+    const labels = { SECRETARIA: 'Secretaria', FISIOTERAPEUTA: 'Fisioterapeuta', FUNCIONARIO: 'Funcionário' };
+    openModalNovoPerfil({ roleKey: key, nome: labels[key] || key, permissions: ROLE_PERMISSIONS[key] || { sections: [], edit: [], delete: [] } });
+}
+
 async function renderPerfis() {
     const container = document.getElementById('perfis-list');
     if (!container) return;
@@ -690,8 +789,12 @@ async function _loadProfilesIntoSelect() {
 }
 
 function openModalNovoPerfil(prefill = null) {
-    document.getElementById('perfil-edit-id').value = prefill?.id || '';
-    document.getElementById('perfil-nome').value    = prefill?.nome || '';
+    document.getElementById('perfil-edit-id').value  = prefill?.id || '';
+    document.getElementById('perfil-role-key').value = prefill?.roleKey || '';
+    const nomeEl = document.getElementById('perfil-nome');
+    nomeEl.value    = prefill?.nome || '';
+    nomeEl.readOnly = !!prefill?.roleKey;
+    nomeEl.style.background = prefill?.roleKey ? '#f8fafc' : '';
     const perms = prefill?.permissions || {};
     const setBtn = (id, on) => {
         const b = document.getElementById(id);
@@ -721,8 +824,9 @@ async function editPerfil(id) {
 
 async function savePerfil(e) {
     e.preventDefault();
-    const id   = document.getElementById('perfil-edit-id').value;
-    const nome = document.getElementById('perfil-nome').value.trim();
+    const id      = document.getElementById('perfil-edit-id').value;
+    const roleKey = document.getElementById('perfil-role-key').value;
+    const nome    = roleKey || document.getElementById('perfil-nome').value.trim();
     if (!nome) return;
     const sections = [], edit = [], del = [];
     PERM_MODULES.forEach(m => {

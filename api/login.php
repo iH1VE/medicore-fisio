@@ -58,10 +58,10 @@ $_SESSION["user_email"] = $user["email"];
 $_SESSION["user_tipo"] = strtoupper($user["tipo"]);
 
 // Resolve permissions: built-in role ou custom profile
-$builtIn = ['ADMIN','SECRETARIA','FISIOTERAPEUTA','FUNCIONARIO'];
-$tipo = strtoupper($user["tipo"]);
+$tipo        = strtoupper($user['tipo'] ?? $user["tipo"] ?? '');
 $permissions = null;
-if (!in_array($tipo, $builtIn)) {
+
+if ($tipo !== 'ADMIN') {
     $pStmt = $conn->prepare("SELECT permissions FROM profiles WHERE nome=? LIMIT 1");
     $pStmt->bind_param('s', $user["tipo"]);
     $pStmt->execute();
